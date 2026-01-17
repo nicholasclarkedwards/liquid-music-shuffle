@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Album, Filters, DiscoveryMode } from '../types';
 import { getRandomLibraryAlbum, discoverAlbumViaAI } from '../services/musicService';
@@ -14,7 +13,7 @@ export const useAlbumDiscovery = (filters: Filters) => {
     try {
       let album: Album;
       if (mode === DiscoveryMode.LIBRARY) {
-        album = await getRandomLibraryAlbum();
+        album = await getRandomLibraryAlbum(filters);
       } else {
         album = await discoverAlbumViaAI(filters, mode);
       }

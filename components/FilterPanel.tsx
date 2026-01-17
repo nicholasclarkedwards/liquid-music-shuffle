@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { Filters } from '../types';
+import InfoIcon from './Common/InfoIcon';
 
 interface FilterPanelProps {
   filters: Filters;
@@ -12,14 +14,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
   };
 
   const decades = ["Any", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"];
-  const genres = ["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"];
+  const genres = ["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country", "Folk", "Soul"];
   const months = ["Any", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
       {/* Decade */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Decade</label>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Decade
+          <InfoIcon text="Filter by era." />
+        </label>
         <div className="relative glass-input-container group">
           <select 
             value={filters.decade}
@@ -35,8 +40,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Genre */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Genre</label>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Genre
+          <InfoIcon text="Filter by musical genre." />
+        </label>
         <div className="relative glass-input-container group">
           <select 
             value={filters.genre}
@@ -52,8 +60,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Specific Year */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Year</label>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Year
+          <InfoIcon text="Release year." />
+        </label>
         <div className="glass-input-container px-6">
           <input 
             type="text"
@@ -66,8 +77,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Specific Month */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Month</label>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Month
+          <InfoIcon text="Release month." />
+        </label>
         <div className="relative glass-input-container group">
           <select 
             value={filters.month}
@@ -82,13 +96,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
         </div>
       </div>
 
-      {/* Artist */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Artist Search</label>
+      {/* Artist Search */}
+      <div className="flex flex-col gap-0.5 md:col-span-2">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Artist Focus
+          <InfoIcon text="Focus on a specific artist for the search." />
+        </label>
         <div className="glass-input-container px-6">
           <input 
             type="text"
-            placeholder="Search..."
+            placeholder="Search for an artist..."
             value={filters.artist}
             onChange={(e) => handleChange('artist', e.target.value)}
             className="placeholder-white/10"
