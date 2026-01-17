@@ -4,92 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liquid Shuffle</title>
-    <!-- Tailwind CSS CDN for utility classes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Apple MusicKit JS -->
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet">
     <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js"></script>
     
     <style>
-      /* Reset and Base Styles */
+      /* Force global typography on all elements */
+      *, body, button, input, select, textarea, h1, h2, h3, h4, p, span {
+        font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif !important;
+      }
+
       body {
         margin: 0;
         padding: 0;
         background-color: #040406;
         color: white;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow-x: hidden;
         min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
-      /* Enhanced Glassmorphism */
       .liquid-glass {
         background: linear-gradient(
           145deg, 
-          rgba(255, 255, 255, 0.08) 0%, 
-          rgba(255, 255, 255, 0.02) 100%
+          rgba(255, 255, 255, 0.05) 0%, 
+          rgba(255, 255, 255, 0.01) 100%
         );
-        backdrop-filter: blur(50px) saturate(200%);
-        -webkit-backdrop-filter: blur(50px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 
-          0 50px 100px -20px rgba(0, 0, 0, 0.7),
-          inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.6);
       }
 
-      /* Premium Pill-style Glass Inputs */
+      /* Reduced height for pill containers */
       .glass-input-container {
         background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-sizing: border-box !important;
-        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        display: flex;
-        align-items: center;
-        /* Pill shape: 999px border-radius */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 999px !important;
-        /* Slimmer height: 42px */
-        height: 42px !important;
+        height: 34px !important;
       }
 
       .glass-input-container:hover {
         background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.25) !important;
-        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.2) !important;
       }
 
-      .glass-input-container:focus-within {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(59, 130, 246, 0.4) !important;
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.08);
-      }
-
+      /* Suppress duplicate dropdown icons globally */
       .glass-input-container input, 
       .glass-input-container select {
         background: transparent !important;
         color: white !important;
         border: none !important;
         outline: none !important;
-        font-weight: 600;
+        font-weight: 500;
         width: 100%;
         height: 100%;
         font-size: 11px !important;
-        letter-spacing: 0.02em;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
       }
 
-      select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        cursor: pointer;
+      .play-button-glass {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       }
 
-      option {
-        background-color: #0f0f1a;
-        color: white;
+      /* Entrance Animation for Album Art - Stratospheric High Altitude Plunge */
+      @keyframes album-plunge {
+        0% {
+          transform: scale(2.5) translateY(-1000px);
+          opacity: 0;
+          filter: blur(40px);
+          box-shadow: 0 150px 250px rgba(0, 0, 0, 0.9);
+        }
+        30% {
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1) translateY(0);
+          opacity: 1;
+          filter: blur(0);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      .animate-album-plunge {
+        animation: album-plunge 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+      }
+
+      /* Synced Background Fade - Heavily delayed to wait for the plunge */
+      @keyframes bg-glow-fade {
+        0% { opacity: 0; transform: scale(1.5); }
+        70% { opacity: 0; } /* Keep hidden for 70% of the duration */
+        100% { opacity: 0.25; transform: scale(1.25); }
+      }
+
+      .animate-bg-sync {
+        animation: bg-glow-fade 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      /* Glassy Toast Styles */
+      .glass-toast {
+        background: rgba(20, 20, 25, 0.8) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        border-radius: 999px !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
       }
 
       .animated-bg {
@@ -99,20 +136,7 @@
         width: 100%;
         height: 100%;
         z-index: -1;
-        background: radial-gradient(circle at 15% 25%, #2563eb10 0%, transparent 45%),
-                    radial-gradient(circle at 85% 75%, #4f46e510 0%, transparent 45%),
-                    radial-gradient(circle at 50% 50%, #000 0%, #040406 100%);
-      }
-
-      .glass-button {
-        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        cursor: pointer;
-        border-radius: 999px !important;
-      }
-
-      .glass-button:hover:not(:disabled) {
-        transform: translateY(-2px);
-        filter: brightness(1.1);
+        background: #040406;
       }
     </style>
 
@@ -123,12 +147,13 @@
         "@google/genai": "https://esm.sh/@google/genai@^1.36.0",
         "react/": "https://esm.sh/react@^19.2.3/",
         "react": "https://esm.sh/react@^19.2.3",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react-hot-toast": "https://esm.sh/react-hot-toast@^2.4.1"
       }
     }
     </script>
 </head>
-<body class="bg-[#050505] text-white">
+<body>
     <div id="root"></div>
     <div class="animated-bg"></div>
 </body>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Filters, DiscoveryMode } from './types';
 import { useAlbumDiscovery } from './hooks/useAlbumDiscovery';
@@ -8,6 +7,7 @@ import FilterPanel from './components/FilterPanel';
 import AlbumArtwork from './components/Album/AlbumArtwork';
 import ShuffleControls from './components/Controls/ShuffleControls';
 import InfoIcon from './components/Common/InfoIcon';
+import { Toaster, toast } from 'react-hot-toast';
 
 const App: React.FC = () => {
   const [filters, setFilters] = useState<Filters>({
@@ -18,24 +18,39 @@ const App: React.FC = () => {
     artist: '',
   });
 
-  // Track a persistent background image to keep UI synced
   const [persistentBg, setPersistentBg] = useState<string | undefined>(undefined);
-
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { fetchRandomAlbum, currentAlbum, isLoading, error } = useAlbumDiscovery(filters);
 
-  // Initial load
   useEffect(() => {
     fetchRandomAlbum(DiscoveryMode.LIBRARY);
   }, []);
 
-  // Sync background with album artwork, clearing immediately when loading starts
+  // Sync Global Background Fade with the Plunge animation
   useEffect(() => {
     if (isLoading) {
+      setIsTransitioning(true);
       setPersistentBg(undefined);
     } else if (currentAlbum?.artworkUrl) {
-      setPersistentBg(currentAlbum.artworkUrl);
+      // Keep background hidden until plunge is well underway
+      const timer = setTimeout(() => {
+        setPersistentBg(currentAlbum.artworkUrl);
+        setIsTransitioning(false);
+      }, 1200);
+      return () => clearTimeout(timer);
     }
   }, [currentAlbum, isLoading]);
+
+  // Trigger glassy toast when errors occur
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        className: 'glass-toast',
+        duration: 4000,
+        position: 'bottom-center'
+      });
+    }
+  }, [error]);
 
   const openAppleMusic = () => {
     if (currentAlbum?.appleMusicUrl) {
@@ -48,12 +63,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      <div className="w-full max-w-6xl z-10 animate-fade-in flex items-center justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
+    <div className="min-h-screen w-full flex flex-col items-center justify-start p-4 relative overflow-x-hidden">
+      <Toaster />
+      <div className="w-full max-w-md z-10 animate-fade-in py-4">
+        <div className="flex flex-col gap-4 w-full">
           
-          {/* Album Display Column */}
-          <div className="lg:col-span-5 flex flex-col">
+          {/* Top: Album Artwork Card */}
+          <div className="w-full">
             <AlbumArtwork 
               album={currentAlbum} 
               isLoading={isLoading} 
@@ -61,46 +77,36 @@ const App: React.FC = () => {
             />
           </div>
 
-          {/* Filters Column */}
-          <div className="lg:col-span-7 flex flex-col justify-start h-full">
+          {/* Bottom: Filters Card */}
+          <div className="w-full">
             <GlassCard 
               className="w-full" 
-              bgImageUrl={persistentBg}
+              bgImageUrl={isTransitioning ? undefined : persistentBg}
             >
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col gap-0.5">
+                  <h3 className="text-base font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
                     Filters
-                    <InfoIcon text="Narrow down the search. Discovery mode will prioritize these values." />
+                    <InfoIcon text="Refine your projects shuffle from your verified library." />
                   </h3>
-                  <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest leading-none">Target specific eras or styles</p>
+                  <p className="text-[7px] text-white/30 font-bold uppercase tracking-widest leading-none">Pool Configuration</p>
                 </div>
-                <div className="has-tooltip">
-                  <button 
-                    onClick={resetFilters}
-                    className="text-[9px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-4 py-2 rounded-full hover:bg-white/10 border border-white/5 active:scale-95"
-                  >
-                    RESET
-                  </button>
-                  <div className="tooltip">Clear all current search criteria</div>
-                </div>
+                <button 
+                  onClick={resetFilters}
+                  className="text-[7px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-2.5 py-1 rounded-full hover:bg-white/10 border border-white/5 active:scale-95"
+                >
+                  RESET
+                </button>
               </div>
 
               <FilterPanel filters={filters} setFilters={setFilters} />
 
-              <div className="mt-8 pt-6 border-t border-white/5">
+              <div className="mt-5 pt-4 border-t border-white/5">
                 <ShuffleControls 
                   onShuffle={fetchRandomAlbum}
                   isLoading={isLoading}
                 />
               </div>
-
-              {error && (
-                <div className="mt-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                  <p className="text-[10px] text-red-400 font-bold tracking-tight uppercase leading-relaxed">{error}</p>
-                </div>
-              )}
             </GlassCard>
           </div>
         </div>

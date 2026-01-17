@@ -1,4 +1,3 @@
-
 import React from 'react';
 import InfoIcon from '../Common/InfoIcon';
 
@@ -19,7 +18,7 @@ const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ isAuthorized, onA
         <p className="text-sm text-white/60 leading-relaxed font-medium">
           {isAuthorized 
             ? "Apple Music Cloud synced. Your picks are enhanced with real-time library data."
-            : "Local Library Detected. Shuffling will prioritize your 'library.json' export file."}
+            : "Local Library Detected. Shuffling will prioritize your 'albums.json' export file."}
         </p>
       </div>
       
