@@ -1,0 +1,5 @@
+{
+  "name": "Liquid Shuffle: Apple Music Explorer",
+  "description": "A high-end, glassmorphic music discovery app that selects random albums from your library or discovers new ones based on deep filtering criteria like decade, genre, and taste.",
+  "requestFramePermissions": []
+}
