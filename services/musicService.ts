@@ -1,20 +1,26 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
-import { fetchMetadataById, fetchMetadataBySearch } from "./itunesService";
+import { fetchMetadataById, fetchMetadataBySearch, fetchMetadataByIds } from "./itunesService";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-let cachedLibrary: any[] | null = null;
+let cachedFullLibrary: any[] | null = null;
+let cachedVisibleLibrary: any[] | null = null;
 
 const getLibraryData = async () => {
-  if (!cachedLibrary) {
+  if (!cachedFullLibrary) {
     const response = await fetch('./library.json');
     if (!response.ok) {
       throw new Error(`Failed to load library.json`);
     }
-    cachedLibrary = await response.json();
+    const data = await response.json();
+    cachedFullLibrary = data;
+    cachedVisibleLibrary = data.filter((album: any) => album.Visible === true);
   }
-  return cachedLibrary!;
+  return { 
+    full: cachedFullLibrary!, 
+    visible: cachedVisibleLibrary! 
+  };
 };
 
 const matchesFilters = (album: Album, filters: Filters): boolean => {
@@ -25,14 +31,12 @@ const matchesFilters = (album: Album, filters: Filters): boolean => {
   }
   if (filters.genre && !album.genre.toLowerCase().includes(filters.genre.toLowerCase())) return false;
   if (filters.artist && !album.artist.toLowerCase().includes(filters.artist.toLowerCase())) return false;
-  // Month is trickier with library shuffles as release dates are partial, skipping strict month check for now
   return true;
 };
 
 export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> => {
   try {
-    const library = await getLibraryData();
-    const visibleAlbums = library.filter(album => album.Visible === true);
+    const { visible: visibleAlbums } = await getLibraryData();
     
     if (!visibleAlbums.length) {
       throw new Error("No visible albums found in your library.");
@@ -42,28 +46,44 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
     
     if (!hasActiveFilters) {
       const randomIndex = Math.floor(Math.random() * visibleAlbums.length);
-      const selected = visibleAlbums[randomIndex];
-      return await resolveAlbumMetadata(selected);
+      return await resolveAlbumMetadata(visibleAlbums[randomIndex]);
     }
 
-    // Filtered Shuffle Strategy: Sample random items and check metadata
-    // We try up to 25 times to find a match to balance speed and accuracy
-    let attempts = 0;
+    // High Speed Filtered Shuffle Strategy: Batch Lookups
+    // We shuffle the whole library and pick batches of items with IDs
     const shuffledPool = [...visibleAlbums].sort(() => Math.random() - 0.5);
     
-    for (const selected of shuffledPool.slice(0, 25)) {
-      try {
-        const album = await resolveAlbumMetadata(selected);
-        if (matchesFilters(album, filters)) {
-          return album;
-        }
-      } catch (e) {
-        continue;
+    // Process in batches of 20 to find a match fast
+    const BATCH_SIZE = 20;
+    const MAX_ITEMS_TO_SCAN = 100; // Limit total items scanned to avoid extreme wait times
+    
+    for (let i = 0; i < MAX_ITEMS_TO_SCAN; i += BATCH_SIZE) {
+      const batch = shuffledPool.slice(i, i + BATCH_SIZE);
+      
+      // Separate items with IDs for batch lookup and those without IDs for sequential fallback
+      const withIds = batch.filter(item => item["Catalog Identifiers - Album"]);
+      const withoutIds = batch.filter(item => !item["Catalog Identifiers - Album"]);
+
+      // 1. Batch fetch metadata for items with catalog IDs (Fastest)
+      if (withIds.length > 0) {
+        const ids = withIds.map(item => item["Catalog Identifiers - Album"]);
+        const metadataBatch = await fetchMetadataByIds(ids);
+        const match = metadataBatch.find(album => matchesFilters(album, filters));
+        if (match) return match;
       }
-      attempts++;
+
+      // 2. Fallback to sequential search for items without IDs in this batch (Slower)
+      for (const selected of withoutIds) {
+        try {
+          const album = await resolveAlbumMetadata(selected);
+          if (matchesFilters(album, filters)) return album;
+        } catch (e) {
+          continue;
+        }
+      }
     }
 
-    throw new Error("Could not find a library match for your specific filters. Try 'Discover' mode or broaden your criteria.");
+    throw new Error("No matches found in library for these filters. Try broadening your criteria or use 'Discover'.");
   } catch (error) {
     console.error("Library shuffle error:", error);
     throw error;
@@ -85,9 +105,8 @@ const resolveAlbumMetadata = async (selected: any): Promise<Album> => {
 };
 
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
-  const library = await getLibraryData();
-  const visibleAlbumsSample = library
-    .filter(album => album.Visible === true)
+  const { visible: visibleAlbums } = await getLibraryData();
+  const visibleAlbumsSample = visibleAlbums
     .slice(0, 30)
     .map(a => a.Title)
     .join(", ");

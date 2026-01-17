@@ -9,24 +9,30 @@ export const fetchMetadataById = async (catalogId: string): Promise<Album> => {
   return mapItunesToAlbum(data.results[0]);
 };
 
+export const fetchMetadataByIds = async (catalogIds: string[]): Promise<Album[]> => {
+  if (catalogIds.length === 0) return [];
+  const response = await fetch(`https://itunes.apple.com/lookup?id=${catalogIds.join(',')}&entity=album`);
+  const data = await response.json();
+  return (data.results || [])
+    .filter((r: any) => r.collectionType === "Album")
+    .map(mapItunesToAlbum);
+};
+
 export const fetchMetadataBySearch = async (title: string, artist?: string): Promise<Album> => {
   const term = artist ? `${artist} ${title}` : title;
   const searchQuery = encodeURIComponent(term);
   
-  // General search is often more reliable than attribute-restricted search for mixed term inputs
   const response = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&limit=20`);
   const data = await response.json();
 
   let results = data.results || [];
   let albums = results.filter((r: any) => r.collectionType === "Album");
 
-  // If we have no exact "Album" types, use the general results
   if (albums.length === 0 && results.length > 0) {
     albums = results;
   }
 
   if (albums.length === 0) {
-    // Fallback: search title only
     const fallbackQuery = encodeURIComponent(title);
     const fallbackResponse = await fetch(`https://itunes.apple.com/search?term=${fallbackQuery}&entity=album&limit=5`);
     const fallbackData = await fallbackResponse.json();
@@ -38,7 +44,6 @@ export const fetchMetadataBySearch = async (title: string, artist?: string): Pro
     throw new Error(`Catalog miss: No matching album found for "${title}".`);
   }
 
-  // Critical matching logic: if an artist was requested, find the result that best matches it
   if (artist) {
     const targetArtist = artist.toLowerCase();
     const artistMatch = albums.find((r: any) => {

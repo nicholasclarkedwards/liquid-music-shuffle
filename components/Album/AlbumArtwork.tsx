@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Album } from '../../types';
 import GlassCard from '../Common/GlassCard';
@@ -42,12 +43,12 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
       ></div>
       
       <div className="relative z-10 w-full flex flex-col items-center">
-        <div className="w-full max-w-[340px] aspect-square mb-8 relative group">
+        <div className="w-full max-w-[340px] aspect-square mb-6 relative group">
           <img 
             key={album.artworkUrl}
             src={album.artworkUrl} 
             alt={album.name}
-            className="w-full h-full object-cover rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.6)] border border-white/10 transform transition-all duration-700 group-hover:scale-[1.03]"
+            className="w-full h-full object-cover rounded-[2rem] shadow-[0_30px_70px_rgba(0,0,0,0.6)] border border-white/10 transform transition-all duration-700 group-hover:scale-[1.03]"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               if (!target.src.includes('picsum')) {
@@ -67,13 +68,13 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
           </button>
         </div>
 
-        <div className="text-center w-full max-w-sm px-4">
-          <h2 className="text-2xl md:text-3xl font-black mb-1 leading-tight tracking-tight line-clamp-2 drop-shadow-2xl">{album.name}</h2>
-          <p className="text-blue-400 font-bold mb-4 tracking-wide uppercase text-xs md:text-sm">{album.artist}</p>
+        <div className="text-center w-full max-w-sm px-4 mb-2">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-black mb-1 leading-tight tracking-tight line-clamp-2 drop-shadow-2xl">{album.name}</h2>
+          <p className="text-blue-400 font-bold mb-4 tracking-wide uppercase text-[10px] md:text-xs">{album.artist}</p>
           <div className="flex items-center justify-center gap-4 py-2 px-5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md inline-flex mx-auto">
-            <span className="text-white/60 text-[9px] font-black uppercase tracking-widest">{album.releaseYear}</span>
+            <span className="text-white/60 text-[8px] font-black uppercase tracking-widest">{album.releaseYear}</span>
             <div className="w-1 h-1 bg-white/20 rounded-full"></div>
-            <span className="text-white/60 text-[9px] font-black uppercase tracking-widest">{album.genre}</span>
+            <span className="text-white/60 text-[8px] font-black uppercase tracking-widest">{album.genre}</span>
           </div>
         </div>
       </div>

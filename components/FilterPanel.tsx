@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Filters } from '../types';
 import InfoIcon from './Common/InfoIcon';
@@ -39,26 +38,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
         </div>
       </div>
 
-      {/* Genre */}
-      <div className="flex flex-col gap-0.5">
-        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
-          Genre
-          <InfoIcon text="Filter by musical genre." />
-        </label>
-        <div className="relative glass-input-container group">
-          <select 
-            value={filters.genre}
-            onChange={(e) => handleChange('genre', e.target.value)}
-            className="px-6"
-          >
-            {genres.map(g => <option key={g} value={g === "Any" ? "" : g} className="bg-[#12121a]">{g}</option>)}
-          </select>
-          <div className="absolute right-5 pointer-events-none opacity-20">
-            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-          </div>
-        </div>
-      </div>
-
       {/* Specific Year */}
       <div className="flex flex-col gap-0.5">
         <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
@@ -89,6 +68,26 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
             className="px-6"
           >
             {months.map(m => <option key={m} value={m === "Any" ? "" : m} className="bg-[#12121a]">{m}</option>)}
+          </select>
+          <div className="absolute right-5 pointer-events-none opacity-20">
+            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Genre */}
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 ml-4 flex items-center leading-none">
+          Genre
+          <InfoIcon text="Filter by musical genre." />
+        </label>
+        <div className="relative glass-input-container group">
+          <select 
+            value={filters.genre}
+            onChange={(e) => handleChange('genre', e.target.value)}
+            className="px-6"
+          >
+            {genres.map(g => <option key={g} value={g === "Any" ? "" : g} className="bg-[#12121a]">{g}</option>)}
           </select>
           <div className="absolute right-5 pointer-events-none opacity-20">
             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
