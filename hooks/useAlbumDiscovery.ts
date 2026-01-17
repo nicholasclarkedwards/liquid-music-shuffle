@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { Album, Filters, DiscoveryMode } from '../types';
-import { discoverAlbum } from '../services/geminiService';
+import { getRandomLibraryAlbum, discoverAlbumViaAI } from '../services/musicService';
 
 export const useAlbumDiscovery = (filters: Filters) => {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
@@ -12,10 +12,16 @@ export const useAlbumDiscovery = (filters: Filters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const album = await discoverAlbum(filters, mode);
+      let album: Album;
+      if (mode === DiscoveryMode.LIBRARY) {
+        album = await getRandomLibraryAlbum();
+      } else {
+        album = await discoverAlbumViaAI(filters, mode);
+      }
       setCurrentAlbum(album);
     } catch (err: any) {
-      setError(err.message || "Failed to find an album. Try broadening your filters.");
+      console.error(err);
+      setError(err.message || "Failed to find an album. Try again!");
     } finally {
       setIsLoading(false);
     }

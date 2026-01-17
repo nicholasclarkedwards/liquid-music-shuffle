@@ -23,7 +23,8 @@ const App: React.FC = () => {
   const { currentAlbum, isLoading, error, fetchRandomAlbum } = useAlbumDiscovery(filters);
 
   useEffect(() => {
-    fetchRandomAlbum(DiscoveryMode.TASTE);
+    // Initial random pick from your local library.json
+    fetchRandomAlbum(DiscoveryMode.LIBRARY);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -38,12 +39,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8 relative">
-      <div className="w-full max-w-6xl z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
+      <div className="w-full max-w-6xl z-10 animate-fade-in">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
           {/* Main Album Artwork & Playback Column */}
-          <div className="lg:col-span-5 flex flex-col order-2 lg:order-1">
+          <div className="lg:col-span-5 flex flex-col order-2 lg:order-1 h-full">
             <AlbumArtwork album={currentAlbum} isLoading={isLoading} />
             <ShuffleControls 
               onShuffle={fetchRandomAlbum}
@@ -56,14 +57,14 @@ const App: React.FC = () => {
           {/* Filters & Settings Column */}
           <div className="lg:col-span-7 flex flex-col gap-6 order-1 lg:order-2">
             <GlassCard 
-              className="flex-none" 
+              className="flex-1" 
               bgImageUrl={currentAlbum?.artworkUrl}
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xl font-black tracking-tight flex items-center gap-3 text-white">
                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-                    Dynamic Filters
+                    Dynamic Curation
                   </h3>
                   <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest">Adjust criteria for your next spin</p>
                 </div>
@@ -77,17 +78,25 @@ const App: React.FC = () => {
 
               <FilterPanel filters={filters} setFilters={setFilters} />
 
-              <div>
+              <div className="mt-4">
                 {error && (
-                  <div className="p-3 rounded-[1.2rem] bg-red-500/10 border border-red-500/20 flex items-center gap-3 mt-2">
+                  <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
                     <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                    <p className="text-[10px] text-red-400 font-bold tracking-tight uppercase">{error}</p>
+                    <p className="text-[10px] text-red-400 font-bold tracking-tight uppercase leading-relaxed">{error}</p>
+                  </div>
+                )}
+                {!error && !isLoading && (
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                      <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Library Active: Ready for shuffle</p>
+                    </div>
+                    <span className="text-[9px] text-white/20 font-black group-hover:text-white/40 transition-colors uppercase">v2.1</span>
                   </div>
                 )}
               </div>
             </GlassCard>
 
-            {/* Integration Status placed directly under filters */}
             <IntegrationStatus 
               isAuthorized={isAuthorized}
               onAuthorize={handleAuthorize}
