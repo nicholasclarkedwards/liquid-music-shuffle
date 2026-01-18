@@ -11,11 +11,9 @@ interface AlbumArtworkProps {
 const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch }) => {
   const [showBg, setShowBg] = useState(false);
 
-  // Sync background visibility with the animation completion
   useEffect(() => {
     if (album && !isLoading) {
       setShowBg(false);
-      // Increased delay to 1500ms to perfectly match the stratospheric plunge
       const timer = setTimeout(() => setShowBg(true), 1500); 
       return () => clearTimeout(timer);
     } else {
@@ -31,7 +29,7 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
             <div className="w-12 h-12 border-2 border-white/5 border-t-blue-500 rounded-full animate-spin"></div>
             <div className="absolute inset-0 w-12 h-12 border-2 border-transparent border-b-indigo-500 rounded-full animate-spin [animation-duration:1.5s]"></div>
           </div>
-          <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest animate-pulse">Syncing catalog...</p>
+          <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest animate-pulse">Scanning Library...</p>
         </div>
       </GlassCard>
     );
@@ -50,7 +48,6 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
 
   return (
     <GlassCard className="flex flex-col items-center justify-center relative !overflow-visible">
-      {/* Immersive Blurred Background - Strict blackout until plunge ends */}
       <div 
         key={`bg-${album.id}`}
         className={`absolute inset-0 bg-center bg-cover blur-3xl scale-125 transition-opacity duration-1000 pointer-events-none rounded-[2rem] overflow-hidden ${showBg ? 'opacity-25' : 'opacity-0'}`}
@@ -58,10 +55,9 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
       ></div>
       
       <div className="relative z-10 w-full flex flex-col items-center">
-        {/* Animated Wrapper for "Stratospheric" Plunge effect */}
         <div 
           key={album.id} 
-          className="w-full max-w-[280px] aspect-square mb-6 relative group/art animate-album-plunge"
+          className="w-full max-w-[300px] aspect-square mb-6 relative group/art animate-album-plunge"
         >
           <div className="w-full h-full relative overflow-hidden rounded-[2rem] border border-white/10 transition-transform duration-500 ease-out group-hover/art:scale-[1.02]">
             <img 
@@ -76,28 +72,24 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
               }}
             />
             
-            {/* Seamless Glassy Play Button Overlay */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/art:opacity-100 transition-all duration-300 transform translate-y-2 group-hover/art:translate-y-0">
-              <div className="has-tooltip">
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onLaunch();
-                  }}
-                  className="play-button-glass w-14 h-14 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all"
-                >
-                  <svg className="w-7 h-7 ml-1" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </button>
-                <div className="tooltip">Open "{album.name}" on Apple Music</div>
-              </div>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLaunch();
+                }}
+                className="play-button-glass w-16 h-16 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all"
+              >
+                <svg className="w-8 h-8 ml-1" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
 
         <div className="text-center w-full max-w-sm px-4">
-          <h2 className="text-xl md:text-2xl font-black mb-1 leading-tight tracking-tight line-clamp-1 drop-shadow-2xl uppercase italic">{album.name}</h2>
+          <h2 className="text-xl md:text-2xl font-black mb-1 leading-tight tracking-tight line-clamp-2 drop-shadow-2xl uppercase italic">{album.name}</h2>
           <p className="text-blue-400 font-bold mb-4 tracking-wider uppercase text-[10px] md:text-xs opacity-90">{album.artist}</p>
           <div className="flex items-center justify-center gap-3 py-1.5 px-5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl inline-flex mx-auto">
             <span className="text-white/70 text-[9px] font-bold uppercase tracking-widest">{album.releaseYear}</span>

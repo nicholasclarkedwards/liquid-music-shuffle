@@ -7,9 +7,11 @@ import FilterPanel from './components/FilterPanel';
 import AlbumArtwork from './components/Album/AlbumArtwork';
 import ShuffleControls from './components/Controls/ShuffleControls';
 import InfoIcon from './components/Common/InfoIcon';
+import LoadingScreen from './components/Common/LoadingScreen';
 import { Toaster, toast } from 'react-hot-toast';
 
 const App: React.FC = () => {
+  const [isBooting, setIsBooting] = useState(true);
   const [filters, setFilters] = useState<Filters>({
     decade: '',
     year: '',
@@ -22,8 +24,19 @@ const App: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { fetchRandomAlbum, currentAlbum, isLoading, error } = useAlbumDiscovery(filters);
 
+  // Initial Boot Logic
   useEffect(() => {
-    fetchRandomAlbum(DiscoveryMode.LIBRARY);
+    const boot = async () => {
+      try {
+        // Fetch first album immediately to clear the loading screen
+        await fetchRandomAlbum(DiscoveryMode.LIBRARY);
+        // Artificial delay to appreciate the premium loading sequence
+        setTimeout(() => setIsBooting(false), 2000);
+      } catch (e) {
+        setIsBooting(false);
+      }
+    };
+    boot();
   }, []);
 
   // Sync Global Background Fade with the Plunge animation
@@ -32,7 +45,6 @@ const App: React.FC = () => {
       setIsTransitioning(true);
       setPersistentBg(undefined);
     } else if (currentAlbum?.artworkUrl) {
-      // Keep background hidden until plunge is well underway
       const timer = setTimeout(() => {
         setPersistentBg(currentAlbum.artworkUrl);
         setIsTransitioning(false);
@@ -41,7 +53,6 @@ const App: React.FC = () => {
     }
   }, [currentAlbum, isLoading]);
 
-  // Trigger glassy toast when errors occur
   useEffect(() => {
     if (error) {
       toast.error(error, {
@@ -63,54 +74,58 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-start p-4 relative overflow-x-hidden">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start p-4 relative overflow-x-hidden">
+      <LoadingScreen isComplete={!isBooting} />
       <Toaster />
-      <div className="w-full max-w-md z-10 animate-fade-in py-4">
-        <div className="flex flex-col gap-4 w-full">
-          
-          {/* Top: Album Artwork Card */}
-          <div className="w-full">
-            <AlbumArtwork 
-              album={currentAlbum} 
-              isLoading={isLoading} 
-              onLaunch={openAppleMusic} 
-            />
-          </div>
+      
+      {!isBooting && (
+        <div className="w-full max-w-md z-10 animate-fade-in-up py-4">
+          <div className="flex flex-col gap-4 w-full">
+            
+            {/* Top: Album Artwork Card */}
+            <div className="w-full">
+              <AlbumArtwork 
+                album={currentAlbum} 
+                isLoading={isLoading} 
+                onLaunch={openAppleMusic} 
+              />
+            </div>
 
-          {/* Bottom: Filters Card */}
-          <div className="w-full">
-            <GlassCard 
-              className="w-full" 
-              bgImageUrl={isTransitioning ? undefined : persistentBg}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex flex-col gap-0.5">
-                  <h3 className="text-base font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
-                    Filters
-                    <InfoIcon text="Refine your projects shuffle from your verified library." />
-                  </h3>
-                  <p className="text-[7px] text-white/30 font-bold uppercase tracking-widest leading-none">Pool Configuration</p>
+            {/* Bottom: Filters Card */}
+            <div className="w-full">
+              <GlassCard 
+                className="w-full" 
+                bgImageUrl={isTransitioning ? undefined : persistentBg}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col gap-0.5">
+                    <h3 className="text-base font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
+                      Filters
+                      <InfoIcon text="Refine your projects shuffle from your verified library." />
+                    </h3>
+                    <p className="text-[7px] text-white/30 font-bold uppercase tracking-widest leading-none">Pool Configuration</p>
+                  </div>
+                  <button 
+                    onClick={resetFilters}
+                    className="text-[7px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-2.5 py-1 rounded-full hover:bg-white/10 border border-white/5 active:scale-95"
+                  >
+                    RESET
+                  </button>
                 </div>
-                <button 
-                  onClick={resetFilters}
-                  className="text-[7px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-2.5 py-1 rounded-full hover:bg-white/10 border border-white/5 active:scale-95"
-                >
-                  RESET
-                </button>
-              </div>
 
-              <FilterPanel filters={filters} setFilters={setFilters} />
+                <FilterPanel filters={filters} setFilters={setFilters} />
 
-              <div className="mt-5 pt-4 border-t border-white/5">
-                <ShuffleControls 
-                  onShuffle={fetchRandomAlbum}
-                  isLoading={isLoading}
-                />
-              </div>
-            </GlassCard>
+                <div className="mt-5 pt-4 border-t border-white/5">
+                  <ShuffleControls 
+                    onShuffle={fetchRandomAlbum}
+                    isLoading={isLoading}
+                  />
+                </div>
+              </GlassCard>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <Background />
     </div>
   );

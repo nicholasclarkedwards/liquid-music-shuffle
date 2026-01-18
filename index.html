@@ -2,7 +2,9 @@
 <html lang="en" class="bg-[#050505]">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Liquid Shuffle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,9 +13,10 @@
     <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js"></script>
     
     <style>
-      /* Force global typography on all elements */
       *, body, button, input, select, textarea, h1, h2, h3, h4, p, span {
         font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        touch-action: manipulation;
       }
 
       body {
@@ -22,40 +25,31 @@
         background-color: #040406;
         color: white;
         overflow-x: hidden;
-        min-height: 100vh;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        min-height: 100dvh;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .liquid-glass {
         background: linear-gradient(
           145deg, 
-          rgba(255, 255, 255, 0.05) 0%, 
-          rgba(255, 255, 255, 0.01) 100%
+          rgba(255, 255, 255, 0.07) 0%, 
+          rgba(255, 255, 255, 0.02) 100%
         );
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(40px) saturate(200%);
+        -webkit-backdrop-filter: blur(40px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.6);
       }
 
-      /* Reduced height for pill containers */
       .glass-input-container {
         background: rgba(255, 255, 255, 0.03) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 999px !important;
-        height: 34px !important;
+        height: 38px !important; /* Slightly taller for mobile tap targets */
       }
 
-      .glass-input-container:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-      }
-
-      /* Suppress duplicate dropdown icons globally */
       .glass-input-container input, 
       .glass-input-container select {
         background: transparent !important;
@@ -65,10 +59,9 @@
         font-weight: 500;
         width: 100%;
         height: 100%;
-        font-size: 11px !important;
+        font-size: 13px !important; /* Mobile legibility */
         appearance: none !important;
         -webkit-appearance: none !important;
-        -moz-appearance: none !important;
       }
 
       .play-button-glass {
@@ -79,41 +72,23 @@
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       }
 
-      /* Entrance Animation for Album Art - Stratospheric High Altitude Plunge */
       @keyframes album-plunge {
-        0% {
-          transform: scale(2.5) translateY(-1000px);
-          opacity: 0;
-          filter: blur(40px);
-          box-shadow: 0 150px 250px rgba(0, 0, 0, 0.9);
-        }
-        30% {
-          opacity: 1;
-        }
-        100% {
-          transform: scale(1) translateY(0);
-          opacity: 1;
-          filter: blur(0);
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        }
+        0% { transform: scale(2.5) translateY(-100dvh); opacity: 0; filter: blur(40px); }
+        30% { opacity: 1; }
+        100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
       }
-
       .animate-album-plunge {
         animation: album-plunge 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
       }
 
-      /* Synced Background Fade - Heavily delayed to wait for the plunge */
-      @keyframes bg-glow-fade {
-        0% { opacity: 0; transform: scale(1.5); }
-        70% { opacity: 0; } /* Keep hidden for 70% of the duration */
-        100% { opacity: 0.25; transform: scale(1.25); }
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
       }
 
-      .animate-bg-sync {
-        animation: bg-glow-fade 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-
-      /* Glassy Toast Styles */
       .glass-toast {
         background: rgba(20, 20, 25, 0.8) !important;
         backdrop-filter: blur(20px) saturate(180%) !important;
@@ -121,22 +96,19 @@
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: white !important;
         font-size: 11px !important;
-        font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.05em !important;
         border-radius: 999px !important;
         padding: 12px 24px !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
       }
 
-      .animated-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        background: #040406;
+      /* Loading Pulse */
+      @keyframes soft-pulse {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+      }
+      .animate-soft-pulse {
+        animation: soft-pulse 3s ease-in-out infinite;
       }
     </style>
 
@@ -155,6 +127,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <div class="animated-bg"></div>
+    <div class="fixed inset-0 bg-[#040406] -z-10"></div>
 </body>
 </html>

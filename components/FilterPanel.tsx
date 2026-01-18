@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Filters } from '../types';
 import InfoIcon from './Common/InfoIcon';
-import { getArtistSuggestions } from '../services/musicService';
+import { getArtistSuggestions, scoutNewArtists } from '../services/musicService';
+import { toast } from 'react-hot-toast';
 
 interface FilterPanelProps {
   filters: Filters;
@@ -11,6 +12,7 @@ interface FilterPanelProps {
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isScouting, setIsScouting] = useState(false);
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (key: keyof Filters, value: string) => {
@@ -36,6 +38,19 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+    }
+  };
+
+  const handleScout = async () => {
+    setIsScouting(true);
+    try {
+      const json = await scoutNewArtists(filters);
+      await navigator.clipboard.writeText(json);
+      toast.success("15 New Artists copied to clipboard as JSON!");
+    } catch (e) {
+      toast.error("Scouting failed. Try again.");
+    } finally {
+      setIsScouting(false);
     }
   };
 
@@ -107,55 +122,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           </div>
         </div>
 
-        {/* Year */}
-        {filters.decade && filters.decade !== "Any" && (
-          <div className="flex flex-col gap-1 animate-fade-in">
-            <label className="text-[7px] font-black uppercase tracking-[0.25em] text-white/30 ml-4 flex items-center leading-none">
-              Specific Year
-              <InfoIcon text={`Available years in the ${filters.decade}`} />
-            </label>
-            <div className="relative glass-input-container group">
-              <select 
-                value={filters.year}
-                onChange={(e) => handleChange('year', e.target.value)}
-                className="px-4 w-full bg-transparent outline-none appearance-none cursor-pointer"
-              >
-                {availableYears.map(y => <option key={y} value={y === "Any" ? "" : y} className="bg-[#12121a]">{y}</option>)}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Month */}
-        {filters.year && filters.year !== "Any" && (
-          <div className="flex flex-col gap-1 animate-fade-in">
-            <label className="text-[7px] font-black uppercase tracking-[0.25em] text-white/30 ml-4 flex items-center leading-none">
-              Release Month
-              <InfoIcon text="Target specific months for seasonal vibes." />
-            </label>
-            <div className="relative glass-input-container group">
-              <select 
-                value={filters.month}
-                onChange={(e) => handleChange('month', e.target.value)}
-                className="px-4 w-full bg-transparent outline-none appearance-none cursor-pointer"
-              >
-                {months.map(m => <option key={m} value={m === "Any" ? "" : m} className="bg-[#12121a]">{m}</option>)}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Artist */}
         <div className="flex flex-col gap-1 md:col-span-2 relative" ref={suggestionRef}>
-          <label className="text-[7px] font-black uppercase tracking-[0.25em] text-white/30 ml-4 flex items-center leading-none">
-            Artist
-            <InfoIcon text="Search artists only from your imported visible library." />
+          <label className="text-[7px] font-black uppercase tracking-[0.25em] text-white/30 ml-4 flex items-center justify-between leading-none w-full pr-4">
+            <span className="flex items-center">
+              Artist Filter
+              <InfoIcon text="Search within your massive library pool." />
+            </span>
+            <button 
+              onClick={handleScout}
+              disabled={isScouting}
+              className="text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+            >
+              {isScouting ? 'SCOUTING...' : 'SCOUT NEW ARTISTS'}
+            </button>
           </label>
           <div className="glass-input-container px-4">
             <input 
