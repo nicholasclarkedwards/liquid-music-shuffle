@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
 import { fetchMetadataBySearch, fetchMetadataById } from "./itunesService";
 
@@ -107,6 +107,7 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
   const seed = Math.random().toString(36).substring(2, 15) + Date.now().toString();
   const previouslySeen = Array.from(sessionSuggestions).slice(-10).join(", ");
 
+  // Improved config with responseSchema for guaranteed JSON structure
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Recommend ONE unique, real, critically acclaimed music Album or EP.
@@ -124,12 +125,27 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
                Return ONLY valid JSON with fields: "albumName" and "artistName".`,
     config: { 
       responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          albumName: { type: Type.STRING },
+          artistName: { type: Type.STRING },
+        },
+        required: ["albumName", "artistName"]
+      },
       temperature: 1.0, // Maximum randomness
     },
   });
 
   try {
-    const recommendation = JSON.parse(response.text);
+    // Accessing .text directly as a property (not a method) and parsing JSON
+    const sanitizedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const recommendation = JSON.parse(sanitizedText);
+    
+    if (!recommendation.albumName || !recommendation.artistName) {
+      throw new Error("Invalid AI structure");
+    }
+
     const album = await fetchMetadataBySearch(recommendation.albumName, recommendation.artistName);
     
     // Track suggestions to avoid repetition

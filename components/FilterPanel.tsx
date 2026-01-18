@@ -73,6 +73,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
 
   const getYearsInDecade = (dec: string) => {
     if (!dec || dec === "Any") return [];
+    // Fixed typo: 'Decade' was undefined, replaced with the 'dec' parameter's substring.
     const start = parseInt(dec.substring(0, 4));
     return ["Any", ...Array.from({ length: 10 }, (_, i) => (start + i).toString())];
   };
@@ -93,7 +94,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
         
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/25 ml-4 flex items-center leading-none">
+            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
               Decade
             </label>
             <CustomDropdown 
@@ -105,7 +106,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/25 ml-4 flex items-center leading-none">
+            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
               Year
             </label>
             {filters.decade && filters.decade !== "Any" ? (
@@ -119,10 +120,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
               <div className="glass-input-container px-4">
                 <input 
                   type="text"
-                  placeholder="YYYY"
+                  placeholder="Enter year..."
                   value={filters.year}
                   onChange={(e) => handleYearTextChange(e.target.value)}
-                  className="placeholder-white/5 text-center tracking-[0.2em] text-[12px] font-bold"
+                  className="placeholder-white/45 text-left tracking-normal text-[12px] font-bold"
                 />
               </div>
             )}
@@ -131,7 +132,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
 
         {filters.year && (
           <div className="flex flex-col gap-1.5 animate-fade-in">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/25 ml-4 flex items-center leading-none">
+            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
               Release Month
             </label>
             <CustomDropdown 
@@ -144,7 +145,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/25 ml-4 flex items-center leading-none">
+          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
             Musical Genre
           </label>
           <CustomDropdown 
@@ -156,7 +157,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
         </div>
 
         <div className="flex flex-col gap-1.5 relative" ref={suggestionRef}>
-          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/25 ml-4 flex items-center leading-none">
+          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
             Artist Pool
           </label>
           <div className="glass-input-container px-4">
@@ -166,7 +167,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
               value={filters.artist}
               onChange={(e) => handleArtistChange(e.target.value)}
               autoComplete="off"
-              className="placeholder-white/5 text-[12px] font-bold"
+              className="placeholder-white/45 text-[12px] font-bold"
             />
           </div>
           

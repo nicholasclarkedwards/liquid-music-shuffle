@@ -47,11 +47,11 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
           <div className="absolute -inset-2 bg-black/30 blur-2xl rounded-[2.5rem] -z-10 opacity-70"></div>
           <div className="absolute inset-6 bg-black/50 blur-3xl rounded-[2rem] -z-10"></div>
           
-          <div className="w-full h-full relative overflow-hidden rounded-[1.25rem] border border-white/10 transition-all duration-1000 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover/art:scale-[1.03] group-hover/art:border-white/20">
+          <div className="w-full h-full relative overflow-hidden rounded-[1.25rem] border border-white/10 transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover/art:scale-[1.03] group-hover/art:border-white/20">
             <img 
               src={album.artworkUrl} 
               alt={album.name}
-              className="w-full h-full object-cover transition-all duration-[1200ms] group-hover/art:brightness-[0.25] group-hover/art:scale-105 group-hover/art:blur-[1px]"
+              className="w-full h-full object-cover transition-all duration-400 group-hover/art:brightness-[0.25] group-hover/art:scale-105 group-hover/art:blur-[1px]"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (!target.src.includes('picsum')) {

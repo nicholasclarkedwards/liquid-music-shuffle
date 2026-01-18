@@ -148,9 +148,9 @@ const App: React.FC = () => {
                   </div>
                   <button 
                     onClick={resetFilters}
-                    className="text-[8px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-3 py-1.5 rounded-full glass-button-base"
+                    className="text-[8px] font-black text-white/60 hover:text-white transition-all tracking-[0.2em] px-3 py-1.5 rounded-full glass-button-base"
                   >
-                    RESET
+                    Reset
                   </button>
                 </div>
 

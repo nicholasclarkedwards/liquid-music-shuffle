@@ -26,14 +26,14 @@ const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ isAuthorized, onA
         {isAuthorized ? (
           <button 
             onClick={onUnauthorize}
-            className="whitespace-nowrap glass-button py-4 px-8 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-red-400 hover:border-red-400/20 transition-all active:scale-95"
+            className="whitespace-nowrap glass-button-base py-4 px-8 rounded-full text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-red-400 active:scale-95"
           >
             DISCONNECT
           </button>
         ) : (
           <button 
             onClick={onAuthorize}
-            className="whitespace-nowrap glass-button py-4 px-8 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/30 hover:bg-blue-500 transition-all active:scale-95"
+            className="whitespace-nowrap glass-button-base py-4 px-8 rounded-full text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl active:scale-95"
           >
             CONNECT CLOUD
           </button>

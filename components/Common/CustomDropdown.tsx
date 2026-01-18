@@ -16,7 +16,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const displayValue = value || options[0];
+  const displayValue = value || "Any";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,11 +40,11 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`glass-input-container w-full px-5 flex items-center justify-between transition-all duration-500 ${isOpen ? 'bg-white/[0.08] border-white/20' : ''}`}
       >
-        <span className={`text-[12px] font-bold tracking-tight uppercase ${value && value !== 'Any' ? 'text-white' : 'text-white/10'}`}>
+        <span className={`text-[12px] font-bold tracking-tight ${value && value !== 'Any' ? 'text-white' : 'text-white/45'}`}>
           {displayValue}
         </span>
         <svg 
-          className={`w-2.5 h-2.5 transition-all duration-500 ${isOpen ? 'rotate-180 opacity-100 text-blue-400' : 'opacity-10 text-white'}`} 
+          className={`w-2.5 h-2.5 transition-all duration-500 ${isOpen ? 'rotate-180 opacity-100 text-blue-400' : 'opacity-20 text-white'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -66,13 +66,13 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             <button
               key={option}
               onClick={() => handleSelect(option)}
-              className={`w-full text-left px-6 h-[40px] flex items-center text-[10px] font-black transition-all uppercase tracking-[0.2em] ${
+              className={`w-full text-left px-6 h-[40px] flex items-center text-[10px] font-black transition-all tracking-[0.2em] ${
                 (value === option || (!value && option === "Any"))
                   ? 'text-blue-400 bg-white/[0.06]'
                   : 'text-white/40 hover:text-white hover:bg-white/[0.03]'
               }`}
             >
-              {option}
+              {option === "Any" ? "Any" : option}
               {(value === option || (!value && option === "Any")) && (
                 <div className="ml-auto w-1.5 h-1.5 bg-blue-400 rounded-full shadow-[0_0_12px_rgba(96,165,250,0.8)]"></div>
               )}
