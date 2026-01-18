@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Filters } from '../types';
 import InfoIcon from './Common/InfoIcon';
+import CustomDropdown from './Common/CustomDropdown';
 import { getArtistSuggestions, scoutNewArtists } from '../services/musicService';
 import { toast } from 'react-hot-toast';
 
@@ -71,13 +72,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
 
   const decades = ["Any", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"];
   const genres = ["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country", "Folk", "Soul"];
-  const months = ["Any", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-  const availableYears = useMemo(() => {
-    if (!filters.decade || filters.decade === "Any") return [];
-    const start = parseInt(filters.decade.substring(0, 4));
-    return ["Any", ...Array.from({ length: 10 }, (_, i) => (start + i).toString())];
-  }, [filters.decade]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,18 +82,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
             Decade
             <InfoIcon text="Select an era to filter your library." />
           </label>
-          <div className="relative glass-input-container group">
-            <select 
-              value={filters.decade}
-              onChange={(e) => handleChange('decade', e.target.value)}
-              className="px-4 w-full bg-transparent outline-none appearance-none cursor-pointer"
-            >
-              {decades.map(d => <option key={d} value={d === "Any" ? "" : d} className="bg-[#12121a]">{d}</option>)}
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-            </div>
-          </div>
+          <CustomDropdown 
+            label="Decade"
+            options={decades}
+            value={filters.decade}
+            onChange={(val) => handleChange('decade', val)}
+          />
         </div>
 
         {/* Genre */}
@@ -108,18 +96,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
             Genre
             <InfoIcon text="Focus on specific musical styles." />
           </label>
-          <div className="relative glass-input-container group">
-            <select 
-              value={filters.genre}
-              onChange={(e) => handleChange('genre', e.target.value)}
-              className="px-4 w-full bg-transparent outline-none appearance-none cursor-pointer"
-            >
-              {genres.map(g => <option key={g} value={g === "Any" ? "" : g} className="bg-[#12121a]">{g}</option>)}
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-            </div>
-          </div>
+          <CustomDropdown 
+            label="Genre"
+            options={genres}
+            value={filters.genre}
+            onChange={(val) => handleChange('genre', val)}
+          />
         </div>
 
         {/* Artist */}
@@ -152,8 +134,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           </div>
           
           {showSuggestions && (
-            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[21px] bg-black/70 backdrop-blur-3xl border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-fade-in">
-              <div className="max-h-52 overflow-y-auto custom-scrollbar">
+            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[1.5rem] bg-black/70 backdrop-blur-3xl border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden bubbly-pop">
+              <div className="max-h-52 overflow-y-auto custom-glass-scrollbar">
                 {suggestions.map((artist, idx) => (
                   <button
                     key={`${artist}-${idx}`}

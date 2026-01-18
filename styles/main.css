@@ -30,6 +30,36 @@
   background: rgba(255, 255, 255, 0.06) !important;
 }
 
+/* Bubbly Animation */
+.bubbly-pop {
+  animation: bubbly-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes bubbly-pop {
+  0% { transform: scale(0.9) translateY(-10px); opacity: 0; filter: blur(10px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+}
+
+/* Liquid Glass Scrollbar */
+.custom-glass-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-glass-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-glass-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.custom-glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 /* Tooltip Implementation - Refined for mobile */
 .has-tooltip {
   position: relative;
@@ -68,7 +98,7 @@
   }
 }
 
-/* Hide scrollbars for a cleaner mobile look */
+/* Hide scrollbars for a cleaner mobile look (main container only) */
 .custom-scrollbar::-webkit-scrollbar {
   display: none;
 }
