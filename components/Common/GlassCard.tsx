@@ -12,7 +12,7 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", bgImage
       {/* Background layer container with its own clipping to prevent blur bleed */}
       <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
         <div 
-          className={`absolute inset-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out blur-3xl scale-125 transform-gpu ${bgImageUrl ? 'opacity-20' : 'opacity-0'}`}
+          className={`absolute inset-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out blur-[120px] scale-150 transform-gpu ${bgImageUrl ? 'opacity-60' : 'opacity-0'}`}
           style={{ backgroundImage: bgImageUrl ? `url(${bgImageUrl})` : 'none' }}
         ></div>
         

@@ -1,12 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
-import { fetchMetadataBySearch, fetchArtistAlbum, fetchMetadataById } from "./itunesService";
+import { fetchMetadataBySearch, fetchMetadataById } from "./itunesService";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 let cachedArtists: any[] | null = null;
 let cachedAlbums: any[] | null = null;
 let libraryPromise: Promise<any> | null = null;
+
+// Track previously suggested albums to minimize exact repetition in the current session
+const sessionSuggestions = new Set<string>();
 
 export const getLibraryData = async () => {
   if (cachedArtists && cachedAlbums) {
@@ -27,7 +30,6 @@ export const getLibraryData = async () => {
         ]);
         
         cachedArtists = artistsData.filter((item: any) => item.Visible === true);
-        // Only include albums that are marked Visible: true in the source file
         cachedAlbums = albumsData.filter((item: any) => 
           item.Visible === true && item["Catalog Identifiers - Album"]
         );
@@ -68,76 +70,74 @@ const matchesFilters = (album: Album, filters: Filters): boolean => {
   return true;
 };
 
-/**
- * Picks a random album from the verified library pool.
- * Only considers Visible: true entries with valid Catalog IDs.
- */
 export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> => {
   const { albums } = await getLibraryData();
   
   if (!albums || albums.length === 0) {
-    throw new Error("No visible projects found in your library file.");
+    throw new Error("No visible projects found in library.");
   }
 
-  // Shuffle the pool of visible albums
   const pool = [...albums].sort(() => Math.random() - 0.5);
-  
-  const MAX_ATTEMPTS = Math.min(pool.length, 50);
+  const MAX_ATTEMPTS = Math.min(pool.length, 40);
   
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
       const targetEntry = pool[i];
       const catalogId = targetEntry["Catalog Identifiers - Album"];
-
-      // Fetch metadata ONLY by exact ID to ensure 100% accuracy
       const album = await fetchMetadataById(catalogId);
-
-      // Apply UI filters to the result
-      if (matchesFilters(album, filters)) {
-        return album;
-      }
+      if (matchesFilters(album, filters)) return album;
     } catch (e) {
-      // If a specific ID is no longer in the store, just move to next index
       continue;
     }
   }
 
-  throw new Error("No visible projects in your library match the current filters.");
-};
-
-export const scoutNewArtists = async (filters: Filters): Promise<string> => {
-  const { artists } = await getLibraryData();
-  const sample = artists.slice(0, 10).map((a: any) => a["Artist Name"]).join(", ");
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Based on a library containing [${sample}], recommend 15 new diverse artists. 
-               Filters: ${filters.genre || 'Any'} in the ${filters.decade || 'current era'}.
-               Return ONLY a JSON array of objects with keys: "Artist Name", "Artist Identifier", "Visible" (true).`,
-    config: { responseMimeType: "application/json" },
-  });
-
-  return response.text;
+  throw new Error("No library matches for these filters.");
 };
 
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
   const { artists } = await getLibraryData();
-  const artistContext = artists
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 20)
+  
+  // High entropy sampling of user's artist context
+  const artistPool = artists.sort(() => Math.random() - 0.5);
+  const artistContext = artistPool
+    .slice(0, 25)
     .map((a: any) => a["Artist Name"])
     .join(", ");
 
+  const seed = Math.random().toString(36).substring(2, 15) + Date.now().toString();
+  const previouslySeen = Array.from(sessionSuggestions).slice(-10).join(", ");
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: `Recommend one real music Album or EP.
-               User context: likes [${artistContext}].
-               Criteria: ${filters.genre} ${filters.decade}.
-               IMPORTANT: Min 4 tracks. No singles. No remixes. No live. 
-               Return ONLY JSON with albumName and artistName.`,
-    config: { responseMimeType: "application/json" },
+    contents: `Recommend ONE unique, real, critically acclaimed music Album or EP.
+               User context (loves these artists): [${artistContext}].
+               Required criteria: Era must be ${filters.decade || 'Any era'} and Genre should be ${filters.genre || 'Any genre'}.
+               Randomization Entropy: ${seed}
+               Avoid these recent suggestions: [${previouslySeen}].
+               
+               Strict Rules:
+               - Must have at least 4 tracks. 
+               - NO singles, NO remixes, NO live recordings.
+               - Pick something defining or a hidden gem of the requested era.
+               - DO NOT repeat the same artists.
+               
+               Return ONLY valid JSON with fields: "albumName" and "artistName".`,
+    config: { 
+      responseMimeType: "application/json",
+      temperature: 1.0, // Maximum randomness
+    },
   });
 
-  const recommendation = JSON.parse(response.text);
-  return await fetchMetadataBySearch(recommendation.albumName, recommendation.artistName);
+  try {
+    const recommendation = JSON.parse(response.text);
+    const album = await fetchMetadataBySearch(recommendation.albumName, recommendation.artistName);
+    
+    // Track suggestions to avoid repetition
+    sessionSuggestions.add(`${album.name} - ${album.artist}`);
+    
+    return album;
+  } catch (err) {
+    console.error("AI Discovery Error:", err);
+    throw new Error("Discovery engine stalled. Please try again.");
+  }
 };

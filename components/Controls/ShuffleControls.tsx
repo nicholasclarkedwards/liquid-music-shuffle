@@ -9,32 +9,36 @@ interface ShuffleControlsProps {
 const ShuffleControls: React.FC<ShuffleControlsProps> = ({ onShuffle, isLoading }) => {
   return (
     <div className="grid grid-cols-2 gap-3">
-      <div className="has-tooltip">
+      <div className="has-tooltip w-full">
         <button 
           onClick={() => onShuffle(DiscoveryMode.LIBRARY)}
           disabled={isLoading}
-          className="glass-button w-full py-2.5 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/10 text-white font-black text-[9px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-white/[0.08] active:scale-95 disabled:opacity-30 transition-all shadow-lg"
+          className="w-full py-3 rounded-full glass-button-base text-white/90 font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl"
         >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 18c3 0 5-1 7-3 4-4 4-4 8-8 2-2 4-3 7-3" />
+            <path d="M17 4l3 3-3 3" />
+            <path d="M2 6c3 0 5 1 7 3 4 4 4 4 8 8 2 2 4 3 7 3" />
+            <path d="M17 20l3-3-3-3" />
           </svg>
           Shuffle
         </button>
-        <div className="tooltip">Pick a random album from your library matching your filters.</div>
+        <div className="tooltip">Pick a random album from your pool.</div>
       </div>
 
-      <div className="has-tooltip">
+      <div className="has-tooltip w-full">
         <button 
           onClick={() => onShuffle(DiscoveryMode.TASTE)}
           disabled={isLoading}
-          className="glass-button w-full py-2.5 rounded-full bg-indigo-500/[0.05] backdrop-blur-xl border border-indigo-500/20 text-indigo-300 font-black text-[9px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-indigo-500/[0.12] active:scale-95 disabled:opacity-30 transition-all shadow-lg"
+          className="w-full py-3 rounded-full glass-button-base bg-blue-600/[0.04] text-blue-300 font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl border-blue-500/20"
         >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
           </svg>
           Discover
         </button>
-        <div className="tooltip">Use Gemini AI to discover a new album matching your style and filters.</div>
+        <div className="tooltip">Discover a new project using Gemini AI.</div>
       </div>
     </div>
   );

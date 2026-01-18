@@ -10,6 +10,40 @@ import InfoIcon from './components/Common/InfoIcon';
 import LoadingScreen from './components/Common/LoadingScreen';
 import { Toaster, toast } from 'react-hot-toast';
 
+// Custom SVG Icons for Toasts
+const IconError = () => (
+  <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>
+  </svg>
+);
+
+const IconWarning = () => (
+  <svg className="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+  </svg>
+);
+
+const IconMessage = () => (
+  <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+  </svg>
+);
+
+const IconShuffleAnimated = () => (
+  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path className="animate-icon-shuffle-flow" d="M2 18c3 0 5-1 7-3 4-4 4-4 8-8 2-2 4-3 7-3" />
+    <path d="M17 4l3 3-3 3" />
+    <path className="animate-icon-shuffle-flow" style={{ animationDelay: '-0.75s' }} d="M2 6c3 0 5 1 7 3 4 4 4 4 8 8 2 2 4 3 7 3" />
+    <path d="M17 20l3-3-3-3" />
+  </svg>
+);
+
+const IconDiscoverAnimated = () => (
+  <svg className="w-5 h-5 text-blue-400 animate-icon-discover" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  </svg>
+);
+
 const App: React.FC = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [filters, setFilters] = useState<Filters>({
@@ -24,13 +58,10 @@ const App: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { fetchRandomAlbum, currentAlbum, isLoading, error } = useAlbumDiscovery(filters);
 
-  // Initial Boot Logic
   useEffect(() => {
     const boot = async () => {
       try {
-        // Fetch first album immediately to clear the loading screen
         await fetchRandomAlbum(DiscoveryMode.LIBRARY);
-        // Artificial delay to appreciate the premium loading sequence
         setTimeout(() => setIsBooting(false), 2000);
       } catch (e) {
         setIsBooting(false);
@@ -39,29 +70,46 @@ const App: React.FC = () => {
     boot();
   }, []);
 
-  // Sync Global Background Fade with the Plunge animation
   useEffect(() => {
     if (isLoading) {
       setIsTransitioning(true);
       setPersistentBg(undefined);
     } else if (currentAlbum?.artworkUrl) {
-      const timer = setTimeout(() => {
-        setPersistentBg(currentAlbum.artworkUrl);
-        setIsTransitioning(false);
-      }, 1200);
-      return () => clearTimeout(timer);
+      // Color update happens instantly when loading stops to sync with artwork landing
+      setPersistentBg(currentAlbum.artworkUrl);
+      setIsTransitioning(false);
     }
   }, [currentAlbum, isLoading]);
 
   useEffect(() => {
     if (error) {
       toast.error(error, {
-        className: 'glass-toast',
+        icon: <IconError />,
+        className: 'glass-toast-base glass-toast-error',
         duration: 4000,
-        position: 'bottom-center'
+        position: 'top-center'
       });
     }
   }, [error]);
+
+  const handleShuffleAction = async (mode: DiscoveryMode) => {
+    const toastId = mode === DiscoveryMode.LIBRARY 
+      ? toast("Shuffling...", { 
+          icon: <IconShuffleAnimated />,
+          className: 'glass-toast-base glass-toast-info',
+          position: 'top-center',
+          duration: 10000 // High duration, manually dismissed
+        })
+      : toast("Finding new album...", { 
+          icon: <IconDiscoverAnimated />,
+          className: 'glass-toast-base glass-toast-info',
+          position: 'top-center',
+          duration: 10000 // High duration, manually dismissed
+        });
+
+    await fetchRandomAlbum(mode);
+    toast.dismiss(toastId);
+  };
 
   const openAppleMusic = () => {
     if (currentAlbum?.appleMusicUrl) {
@@ -71,6 +119,11 @@ const App: React.FC = () => {
 
   const resetFilters = () => {
     setFilters({ decade: '', year: '', month: '', genre: '', artist: '' });
+    toast.success("Pool reset. Configuration cleared.", {
+      icon: <IconMessage />,
+      className: 'glass-toast-base glass-toast-success',
+      position: 'top-center'
+    });
   };
 
   return (
@@ -82,7 +135,6 @@ const App: React.FC = () => {
         <div className="w-full max-w-md z-10 animate-fade-in-up py-4">
           <div className="flex flex-col gap-4 w-full">
             
-            {/* Top: Album Artwork Card */}
             <div className="w-full">
               <AlbumArtwork 
                 album={currentAlbum} 
@@ -91,23 +143,22 @@ const App: React.FC = () => {
               />
             </div>
 
-            {/* Bottom: Filters Card */}
             <div className="w-full">
               <GlassCard 
                 className="w-full" 
                 bgImageUrl={isTransitioning ? undefined : persistentBg}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex flex-col gap-0.5">
-                    <h3 className="text-base font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
-                      Filters
-                      <InfoIcon text="Refine your projects shuffle from your verified library." />
+                <div className="flex items-center justify-between mb-5 px-1">
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-sm font-black tracking-tight flex items-center gap-2 text-white uppercase leading-none">
+                      Filter Engine
+                      <InfoIcon text="Refine your library pool for the next shuffle." />
                     </h3>
-                    <p className="text-[7px] text-white/30 font-bold uppercase tracking-widest leading-none">Pool Configuration</p>
+                    <p className="text-[8px] text-white/30 font-black uppercase tracking-[0.2em] leading-none">Discovery Config</p>
                   </div>
                   <button 
                     onClick={resetFilters}
-                    className="text-[7px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-2.5 py-1 rounded-full hover:bg-white/10 border border-white/5 active:scale-95"
+                    className="text-[8px] font-black text-white/40 hover:text-white transition-all tracking-[0.2em] px-3 py-1.5 rounded-full glass-button-base"
                   >
                     RESET
                   </button>
@@ -115,9 +166,9 @@ const App: React.FC = () => {
 
                 <FilterPanel filters={filters} setFilters={setFilters} />
 
-                <div className="mt-5 pt-4 border-t border-white/5">
+                <div className="mt-6 pt-5 border-t border-white/5">
                   <ShuffleControls 
-                    onShuffle={fetchRandomAlbum}
+                    onShuffle={handleShuffleAction}
                     isLoading={isLoading}
                   />
                 </div>
