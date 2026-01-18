@@ -1,32 +1,51 @@
 import { Album } from "../types";
 
 /**
- * Validates if a result is a proper project (3+ tracks).
+ * Validates if a result is a proper project.
+ * Loosened trackCount requirement to 1 to capture EPs/Projects with missing metadata.
  */
 export const isValidAlbum = (result: any): boolean => {
   if (!result) return false;
-  const trackCount = result.trackCount || 0;
   const primaryGenre = (result.primaryGenreName || "").toLowerCase();
   
-  if (primaryGenre.includes("karaoke") || primaryGenre.includes("fitness")) return false;
+  // Filter out obvious non-music projects
+  if (primaryGenre.includes("karaoke") || primaryGenre.includes("fitness") || primaryGenre.includes("spoken word")) {
+    return false;
+  }
 
-  // Enforce project status (EP/Album usually 3+ tracks)
-  return trackCount >= 3;
+  // Ensure it's a collection (album/EP) rather than a single track result (though search is set to entity=album)
+  return !!result.collectionId;
 };
 
 export const fetchMetadataBySearch = async (title: string, artist?: string): Promise<Album> => {
-  const term = artist ? `${artist} ${title}` : title;
-  const searchQuery = encodeURIComponent(term);
+  // Clean the title and artist to remove common AI artifacts like "Album:" or quotes
+  const cleanTitle = title.replace(/["']/g, "").trim();
+  const cleanArtist = artist ? artist.replace(/["']/g, "").trim() : "";
+
+  const performSearch = async (term: string) => {
+    const searchQuery = encodeURIComponent(term);
+    const response = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&limit=5`);
+    const data = await response.json();
+    return data.results || [];
+  };
+
+  // Attempt 1: Artist + Title
+  let results = await performSearch(`${cleanArtist} ${cleanTitle}`);
   
-  const response = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&limit=10`);
-  const data = await response.json();
-  const results = data.results || [];
-  
-  // Find first result that looks like a project
+  // Attempt 2: Title only (if Attempt 1 failed)
+  if (results.length === 0) {
+    results = await performSearch(cleanTitle);
+  }
+
+  // Attempt 3: Just the start of the title (handling long sub-titled albums)
+  if (results.length === 0 && cleanTitle.length > 10) {
+    results = await performSearch(cleanTitle.substring(0, 15));
+  }
+
   const bestMatch = results.find(isValidAlbum) || results[0];
 
   if (!bestMatch) {
-    throw new Error(`Catalog miss: "${title}" not found.`);
+    throw new Error(`Catalog miss: "${cleanTitle}" by ${cleanArtist || 'Unknown'} not found.`);
   }
 
   return mapItunesToAlbum(bestMatch);

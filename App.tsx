@@ -133,7 +133,6 @@ const App: React.FC = () => {
             </div>
 
             <div className="w-full">
-              {/* Filter Panel gets the same color theme as the artwork card */}
               <GlassCard 
                 className="w-full" 
                 imageUrl={isLoading ? undefined : currentAlbum?.artworkUrl}

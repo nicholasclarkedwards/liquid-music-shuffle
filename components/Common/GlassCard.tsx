@@ -11,9 +11,9 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", imageUr
     <div className={`liquid-glass rounded-[2rem] p-5 md:p-6 relative transition-all duration-700 ${className}`}>
       {/* Internal Color Fill Layer */}
       <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none isolate">
-        {/* Album Color Fill */}
+        {/* Album Color Fill - Secondary soft glow */}
         <div 
-          className={`absolute inset-0 bg-center bg-cover blur-[100px] scale-150 transform-gpu transition-opacity duration-700 ${imageUrl ? 'opacity-50' : 'opacity-0'}`}
+          className={`absolute inset-0 bg-center bg-cover blur-[100px] scale-150 transform-gpu transition-opacity duration-1000 ${imageUrl ? 'opacity-40' : 'opacity-0'}`}
           style={{ 
             backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
             willChange: 'opacity'
@@ -27,8 +27,8 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", imageUr
           <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-indigo-500/10 blur-[80px]"></div>
         </div>
 
-        {/* Base Glass Tint - Prevents Safari "Black Void" */}
-        <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-3xl shadow-inner"></div>
+        {/* Base Glass Tint */}
+        <div className="absolute inset-0 bg-white/[0.015] backdrop-blur-3xl shadow-inner border border-white/5"></div>
       </div>
       
       {/* Content layer */}

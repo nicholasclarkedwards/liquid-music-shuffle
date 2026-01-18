@@ -107,53 +107,50 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
   const seed = Math.random().toString(36).substring(2, 15) + Date.now().toString();
   const previouslySeen = Array.from(sessionSuggestions).slice(-10).join(", ");
 
-  // Improved config with responseSchema for guaranteed JSON structure
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Recommend ONE unique, real, critically acclaimed music Album or EP.
-               User context (loves these artists): [${artistContext}].
-               Required criteria: Era must be ${filters.decade || 'Any era'} and Genre should be ${filters.genre || 'Any genre'}.
-               Randomization Entropy: ${seed}
-               Avoid these recent suggestions: [${previouslySeen}].
-               
-               Strict Rules:
-               - Must have at least 4 tracks. 
-               - NO singles, NO remixes, NO live recordings.
-               - Pick something defining or a hidden gem of the requested era.
-               - DO NOT repeat the same artists.
-               
-               Return ONLY valid JSON with fields: "albumName" and "artistName".`,
-    config: { 
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          albumName: { type: Type.STRING },
-          artistName: { type: Type.STRING },
-        },
-        required: ["albumName", "artistName"]
-      },
-      temperature: 1.0, // Maximum randomness
-    },
-  });
-
   try {
-    // Accessing .text directly as a property (not a method) and parsing JSON
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Recommend ONE unique, real, critically acclaimed music Album or EP.
+                 User context (loves these artists): [${artistContext}].
+                 Required criteria: Era must be ${filters.decade || 'Any era'} and Genre should be ${filters.genre || 'Any genre'}.
+                 Randomization Entropy: ${seed}
+                 Avoid these recent suggestions: [${previouslySeen}].
+                 
+                 Strict Rules:
+                 - Must have at least 3 tracks. 
+                 - NO singles, NO remixes, NO live recordings.
+                 - Return ONLY a JSON object with fields "albumName" and "artistName".`,
+      config: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            albumName: { type: Type.STRING },
+            artistName: { type: Type.STRING },
+          },
+          required: ["albumName", "artistName"]
+        },
+        temperature: 1.0,
+      },
+    });
+
     const sanitizedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
     const recommendation = JSON.parse(sanitizedText);
     
     if (!recommendation.albumName || !recommendation.artistName) {
-      throw new Error("Invalid AI structure");
+      throw new Error("Invalid AI structure returned.");
     }
 
     const album = await fetchMetadataBySearch(recommendation.albumName, recommendation.artistName);
-    
-    // Track suggestions to avoid repetition
     sessionSuggestions.add(`${album.name} - ${album.artist}`);
     
     return album;
-  } catch (err) {
-    console.error("AI Discovery Error:", err);
-    throw new Error("Discovery engine stalled. Please try again.");
+  } catch (err: any) {
+    console.error("AI Discovery Error Details:", err);
+    // If it's a catalog miss, re-throw it so the UI shows the specific message
+    if (err.message && err.message.includes("Catalog miss")) {
+      throw err;
+    }
+    throw new Error("Discovery engine stalled. Check your connection and try again.");
   }
 };
