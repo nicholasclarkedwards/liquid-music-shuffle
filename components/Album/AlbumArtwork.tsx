@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Album } from '../../types';
 import GlassCard from '../Common/GlassCard';
 
@@ -9,17 +9,6 @@ interface AlbumArtworkProps {
 }
 
 const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch }) => {
-  const [showBg, setShowBg] = useState(false);
-
-  useEffect(() => {
-    if (album && !isLoading) {
-      // Trigger background instantly as the plunge starts
-      setShowBg(true);
-    } else {
-      setShowBg(false);
-    }
-  }, [album, isLoading]);
-
   if (isLoading) {
     return (
       <GlassCard className="flex flex-col items-center justify-center min-h-[420px]">
@@ -46,13 +35,10 @@ const AlbumArtwork: React.FC<AlbumArtworkProps> = ({ album, isLoading, onLaunch 
   }
 
   return (
-    <GlassCard className="flex flex-col items-center justify-center relative !overflow-visible min-h-[460px]">
-      <div 
-        key={`bg-${album.id}`}
-        className={`absolute inset-0 bg-center bg-cover blur-[100px] scale-[2.2] transition-opacity duration-[1000ms] pointer-events-none rounded-[2.5rem] overflow-hidden ${showBg ? 'opacity-80' : 'opacity-0'}`}
-        style={{ backgroundImage: `url(${album.artworkUrl})` }}
-      ></div>
-      
+    <GlassCard 
+      className="flex flex-col items-center justify-center relative !overflow-visible min-h-[460px]"
+      imageUrl={album.artworkUrl}
+    >
       <div className="relative z-10 w-full flex flex-col items-center">
         <div 
           key={album.id} 

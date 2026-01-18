@@ -17,12 +17,6 @@ const IconError = () => (
   </svg>
 );
 
-const IconWarning = () => (
-  <svg className="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
-  </svg>
-);
-
 const IconMessage = () => (
   <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
@@ -55,7 +49,6 @@ const App: React.FC = () => {
   });
 
   const [persistentBg, setPersistentBg] = useState<string | undefined>(undefined);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const { fetchRandomAlbum, currentAlbum, isLoading, error } = useAlbumDiscovery(filters);
 
   useEffect(() => {
@@ -71,13 +64,8 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoading) {
-      setIsTransitioning(true);
-      setPersistentBg(undefined);
-    } else if (currentAlbum?.artworkUrl) {
-      // Color update happens instantly when loading stops to sync with artwork landing
+    if (!isLoading && currentAlbum?.artworkUrl) {
       setPersistentBg(currentAlbum.artworkUrl);
-      setIsTransitioning(false);
     }
   }, [currentAlbum, isLoading]);
 
@@ -98,13 +86,13 @@ const App: React.FC = () => {
           icon: <IconShuffleAnimated />,
           className: 'glass-toast-base glass-toast-info',
           position: 'top-center',
-          duration: 10000 // High duration, manually dismissed
+          duration: 10000 
         })
       : toast("Finding new album...", { 
           icon: <IconDiscoverAnimated />,
           className: 'glass-toast-base glass-toast-info',
           position: 'top-center',
-          duration: 10000 // High duration, manually dismissed
+          duration: 10000 
         });
 
     await fetchRandomAlbum(mode);
@@ -130,6 +118,7 @@ const App: React.FC = () => {
     <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start p-4 relative overflow-x-hidden">
       <LoadingScreen isComplete={!isBooting} />
       <Toaster />
+      <Background imageUrl={persistentBg} />
       
       {!isBooting && (
         <div className="w-full max-w-md z-10 animate-fade-in-up py-4">
@@ -144,9 +133,10 @@ const App: React.FC = () => {
             </div>
 
             <div className="w-full">
+              {/* Filter Panel gets the same color theme as the artwork card */}
               <GlassCard 
                 className="w-full" 
-                bgImageUrl={isTransitioning ? undefined : persistentBg}
+                imageUrl={isLoading ? undefined : currentAlbum?.artworkUrl}
               >
                 <div className="flex items-center justify-between mb-5 px-1">
                   <div className="flex flex-col gap-1">
@@ -177,7 +167,6 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-      <Background />
     </div>
   );
 };

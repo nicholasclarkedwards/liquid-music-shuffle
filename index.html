@@ -47,7 +47,7 @@
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 999px !important;
-        height: 38px !important; /* Slightly taller for mobile tap targets */
+        height: 38px !important;
       }
 
       .glass-input-container input, 
@@ -59,7 +59,7 @@
         font-weight: 500;
         width: 100%;
         height: 100%;
-        font-size: 13px !important; /* Mobile legibility */
+        font-size: 13px !important;
         appearance: none !important;
         -webkit-appearance: none !important;
       }
@@ -102,7 +102,6 @@
         padding: 12px 24px !important;
       }
 
-      /* Loading Pulse */
       @keyframes soft-pulse {
         0%, 100% { opacity: 0.4; transform: scale(1); }
         50% { opacity: 0.8; transform: scale(1.05); }
@@ -127,6 +126,5 @@
 </head>
 <body>
     <div id="root"></div>
-    <div class="fixed inset-0 bg-[#040406] -z-10"></div>
 </body>
 </html>
