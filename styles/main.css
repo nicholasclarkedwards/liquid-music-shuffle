@@ -2,12 +2,12 @@
 
 :root {
   --glass-blur: 40px;
-  --glass-saturate: 180%;
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-saturate: 210%;
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.035);
   
   /* Shared menu/tooltip constants - Cohesive Light Glass */
-  --menu-bg: rgba(255, 255, 255, 0.06);
+  --menu-bg: rgba(255, 255, 255, 0.07);
   --menu-blur: 60px;
   --menu-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
   --menu-exit: cubic-bezier(0.19, 1, 0.22, 1);
@@ -18,32 +18,33 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.55);
 }
 
 /* Light Cohesive Glass for Menus/Tooltips */
 .liquid-menu-base {
   background: var(--menu-bg) !important;
-  backdrop-filter: blur(var(--menu-blur)) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(150%) !important;
+  backdrop-filter: blur(var(--menu-blur)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.4) !important;
 }
 
 .glass-input-container {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-sizing: border-box !important;
   display: flex;
   align-items: center;
   transition: all 0.5s var(--menu-spring);
+  height: 42px !important; /* Standardized height */
 }
 
 .glass-input-container:focus-within {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 /* Master Glass Buttons */
@@ -52,15 +53,15 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.4s var(--menu-spring);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .glass-button-base:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 
-/* Tooltip System - Matching Card Glass */
+/* Tooltip System - Now using Prism Glass */
 .has-tooltip {
   position: relative;
 }
@@ -74,14 +75,14 @@
   visibility: hidden;
   
   background: var(--menu-bg) !important;
-  backdrop-filter: blur(var(--menu-blur)) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(150%) !important;
+  backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   
   padding: 8px 16px;
   border-radius: 12px;
   width: max-content;
-  max-width: 200px;
+  max-width: 220px;
   color: white;
   font-size: 11px;
   font-weight: 600;
@@ -118,26 +119,7 @@
   color: white;
 }
 
-/* Icon & Global Animations */
-@keyframes icon-flow {
-  0% { stroke-dashoffset: 40; }
-  100% { stroke-dashoffset: 0; }
-}
-
-.animate-icon-shuffle-flow {
-  stroke-dasharray: 20 20;
-  animation: icon-flow 1.5s linear infinite;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
+/* Scrollbars */
 .custom-glass-scrollbar::-webkit-scrollbar {
   width: 3px;
 }
@@ -147,4 +129,22 @@
 .custom-glass-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
+}
+
+/* Animations */
+@keyframes album-plunge {
+  0% { transform: scale(2.5) translateY(-100dvh); opacity: 0; filter: blur(40px); }
+  30% { opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+}
+.animate-album-plunge {
+  animation: album-plunge 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

@@ -8,7 +8,6 @@ let cachedArtists: any[] | null = null;
 let cachedAlbums: any[] | null = null;
 let libraryPromise: Promise<any> | null = null;
 
-// Track previously suggested albums to minimize exact repetition in the current session
 const sessionSuggestions = new Set<string>();
 
 export const getLibraryData = async () => {
@@ -78,7 +77,7 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
   }
 
   const pool = [...albums].sort(() => Math.random() - 0.5);
-  const MAX_ATTEMPTS = Math.min(pool.length, 40);
+  const MAX_ATTEMPTS = Math.min(pool.length, 60);
   
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
@@ -97,29 +96,30 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
   const { artists } = await getLibraryData();
   
-  // High entropy sampling of user's artist context
-  const artistPool = artists.sort(() => Math.random() - 0.5);
-  const artistContext = artistPool
-    .slice(0, 25)
+  const artistContext = artists
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 30)
     .map((a: any) => a["Artist Name"])
     .join(", ");
 
-  const seed = Math.random().toString(36).substring(2, 15) + Date.now().toString();
-  const previouslySeen = Array.from(sessionSuggestions).slice(-10).join(", ");
+  const seed = Math.random().toString(36).substring(7) + Date.now().toString();
+  const previouslySeen = Array.from(sessionSuggestions).slice(-15).join(", ");
+
+  const modeInstruction = mode === DiscoveryMode.TASTE 
+    ? "Pick a definitive, critically acclaimed classic that matches the user's vibe."
+    : "Pick an obscure gem, deep cut, or rising artist that the user might not know yet.";
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Recommend ONE unique, real, critically acclaimed music Album or EP.
-                 User context (loves these artists): [${artistContext}].
-                 Required criteria: Era must be ${filters.decade || 'Any era'} and Genre should be ${filters.genre || 'Any genre'}.
-                 Randomization Entropy: ${seed}
-                 Avoid these recent suggestions: [${previouslySeen}].
+      contents: `Recommend ONE real music Album or EP.
+                 User vibe (enjoys these): [${artistContext}].
+                 Mode: ${mode.toUpperCase()} - ${modeInstruction}
+                 Constraint: Era must be ${filters.decade || 'any'} and Genre should be ${filters.genre || 'any'}.
+                 Entropy Token: ${seed}
+                 Avoid repeating: [${previouslySeen}].
                  
-                 Strict Rules:
-                 - Must have at least 3 tracks. 
-                 - NO singles, NO remixes, NO live recordings.
-                 - Return ONLY a JSON object with fields "albumName" and "artistName".`,
+                 Required fields: "albumName" and "artistName".`,
       config: { 
         responseMimeType: "application/json",
         responseSchema: {
@@ -134,11 +134,10 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
       },
     });
 
-    const sanitizedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const recommendation = JSON.parse(sanitizedText);
+    const recommendation = JSON.parse(response.text.trim());
     
     if (!recommendation.albumName || !recommendation.artistName) {
-      throw new Error("Invalid AI structure returned.");
+      throw new Error("AI returned empty metadata.");
     }
 
     const album = await fetchMetadataBySearch(recommendation.albumName, recommendation.artistName);
@@ -146,11 +145,8 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
     
     return album;
   } catch (err: any) {
-    console.error("AI Discovery Error Details:", err);
-    // If it's a catalog miss, re-throw it so the UI shows the specific message
-    if (err.message && err.message.includes("Catalog miss")) {
-      throw err;
-    }
-    throw new Error("Discovery engine stalled. Check your connection and try again.");
+    console.error("AI Discovery Error:", err);
+    if (err.message?.includes("Catalog miss")) throw err;
+    throw new Error("Discovery engine stalled. Check connection and retry.");
   }
 };

@@ -38,7 +38,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
       {/* Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`glass-input-container w-full px-5 flex items-center justify-between transition-all duration-500 ${isOpen ? 'bg-white/[0.1] border-white/30' : ''}`}
+        className={`glass-input-container w-full px-5 flex items-center justify-between transition-all duration-500 rounded-full ${isOpen ? 'bg-white/[0.1] border-white/30' : ''}`}
       >
         <span className={`text-[12px] font-bold tracking-tight ${value && value !== 'Any' ? 'text-white' : 'text-white/40'}`}>
           {displayValue}

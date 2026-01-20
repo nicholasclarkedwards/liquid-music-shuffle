@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Filters } from '../types';
-import InfoIcon from './Common/InfoIcon';
 import CustomDropdown from './Common/CustomDropdown';
 import { getArtistSuggestions } from '../services/musicService';
 import { toast } from 'react-hot-toast';
 
-// Reusable Error Icon for toasts here too
 const IconError = () => (
   <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>
@@ -87,15 +85,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const labelClass = "text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none mb-1.5";
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4">
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         
+        {/* Row 1: Decade & Year */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
-              Decade
-            </label>
+          <div className="flex flex-col">
+            <label className={labelClass}>Decade</label>
             <CustomDropdown 
               label="Decade"
               options={decades}
@@ -104,10 +103,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
-              Year
-            </label>
+          <div className="flex flex-col">
+            <label className={labelClass}>Year</label>
             {filters.decade && filters.decade !== "Any" ? (
               <CustomDropdown 
                 label="Year"
@@ -116,24 +113,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
                 onChange={(val) => handleChange('year', val)}
               />
             ) : (
-              <div className="glass-input-container px-4">
+              <div className="glass-input-container px-4 rounded-full">
                 <input 
                   type="text"
                   placeholder="Enter year..."
                   value={filters.year}
                   onChange={(e) => handleYearTextChange(e.target.value)}
-                  className="placeholder-white/45 text-left tracking-normal text-[12px] font-bold"
+                  className="placeholder-white/35 text-left tracking-normal text-[12px] font-bold"
                 />
               </div>
             )}
           </div>
         </div>
 
-        {filters.year && (
-          <div className="flex flex-col gap-1.5 animate-fade-in">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
-              Release Month
-            </label>
+        {/* Row 2: Month & Genre */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col">
+            <label className={labelClass}>Release Month</label>
             <CustomDropdown 
               label="Month"
               options={months}
@@ -141,37 +137,34 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
               onChange={(val) => handleChange('month', val)}
             />
           </div>
-        )}
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
-            Musical Genre
-          </label>
-          <CustomDropdown 
-            label="Genre"
-            options={["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"]}
-            value={filters.genre}
-            onChange={(val) => handleChange('genre', val)}
-          />
+          <div className="flex flex-col">
+            <label className={labelClass}>Musical Genre</label>
+            <CustomDropdown 
+              label="Genre"
+              options={["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"]}
+              value={filters.genre}
+              onChange={(val) => handleChange('genre', val)}
+            />
+          </div>
         </div>
 
-        <div className="flex flex-col gap-1.5 relative" ref={suggestionRef}>
-          <label className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 flex items-center leading-none">
-            Artist Pool
-          </label>
-          <div className="glass-input-container px-4">
+        {/* Row 3: Artist Pool */}
+        <div className="flex flex-col relative" ref={suggestionRef}>
+          <label className={labelClass}>Artist Pool</label>
+          <div className="glass-input-container px-4 rounded-full">
             <input 
               type="text"
               placeholder="Search library artists..."
               value={filters.artist}
               onChange={(e) => handleArtistChange(e.target.value)}
               autoComplete="off"
-              className="placeholder-white/45 text-[12px] font-bold"
+              className="placeholder-white/35 text-[12px] font-bold"
             />
           </div>
           
           {showSuggestions && (
-            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[1.2rem] liquid-menu-base shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden bubbly-pop origin-top">
+            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[1.2rem] liquid-menu-base shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden origin-top">
               <div className="max-h-52 overflow-y-auto custom-glass-scrollbar">
                 {suggestions.map((artist, idx) => (
                   <button
@@ -180,7 +173,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
                       handleChange('artist', artist);
                       setShowSuggestions(false);
                     }}
-                    className="w-full text-left px-5 h-[38px] flex items-center text-[10px] font-bold text-white/70 hover:text-blue-400 hover:bg-white/[0.04] transition-all uppercase tracking-widest"
+                    className="w-full text-left px-5 h-[40px] flex items-center text-[10px] font-bold text-white/50 hover:text-white hover:bg-black/20 transition-all uppercase tracking-widest"
                   >
                     {artist}
                   </button>
