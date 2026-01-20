@@ -11,7 +11,7 @@ import {
   InfoIcon, 
   LoadingScreen 
 } from './components';
-import { syncFullLibrary } from './services/musicService';
+import { syncFullLibrary, resetSessionHistory } from './services/musicService';
 import { Toaster, toast } from 'react-hot-toast';
 import { Shuffle, Search, AlertCircle, Info } from 'lucide-react';
 
@@ -48,12 +48,10 @@ const App: React.FC = () => {
   useEffect(() => {
     const boot = async () => {
       try {
-        // Now only loads JSON files, much faster!
         await syncFullLibrary((current, total) => {
           setSyncProgress({ current, total });
         });
         
-        // Pick an initial album from raw list
         await fetchRandomAlbum(DiscoveryMode.LIBRARY);
         setTimeout(() => setIsBooting(false), 500);
       } catch (e) {
@@ -117,7 +115,8 @@ const App: React.FC = () => {
 
   const resetFilters = () => {
     setFilters({ decade: '', year: '', month: '', genre: '', artist: '' });
-    toast.success("Pool reset. Configuration cleared.", {
+    resetSessionHistory(); // Wipe session memory
+    toast.success("Pool reset. History cleared.", {
       icon: <IconMessage />,
       className: 'glass-toast-base glass-toast-success',
       position: 'top-center'
