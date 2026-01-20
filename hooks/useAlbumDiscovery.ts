@@ -1,6 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { Album, Filters, DiscoveryMode } from '../types';
-import { getRandomLibraryAlbum, discoverAlbumViaAI } from '../services/musicService';
+import { getRandomLibraryAlbum, discoverAlbumViaAI, refreshAlbumMetadata } from '../services/musicService';
 
 export const useAlbumDiscovery = (filters: Filters) => {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
@@ -26,5 +27,19 @@ export const useAlbumDiscovery = (filters: Filters) => {
     }
   }, [filters]);
 
-  return { currentAlbum, isLoading, error, fetchRandomAlbum };
+  const refreshCurrent = useCallback(async () => {
+    if (!currentAlbum) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const refreshed = await refreshAlbumMetadata(currentAlbum, filters);
+      setCurrentAlbum(refreshed);
+    } catch (err: any) {
+      setError("Failed to update metadata. Keeping current version.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentAlbum, filters]);
+
+  return { currentAlbum, isLoading, error, fetchRandomAlbum, refreshCurrent };
 };

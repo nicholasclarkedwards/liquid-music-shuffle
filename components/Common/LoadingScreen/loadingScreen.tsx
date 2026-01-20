@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import './loadingScreen.css';
 
@@ -19,7 +20,12 @@ const MESSAGES = [
   "Organizing the record collection by vibe..."
 ];
 
-const LoadingScreen: React.FC<{ isComplete: boolean }> = ({ isComplete }) => {
+interface LoadingScreenProps {
+  isComplete: boolean;
+  progress: { current: number; total: number };
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ isComplete, progress }) => {
   const [msgIndex, setMsgIndex] = useState(0);
   const [fade, setFade] = useState(true);
 
@@ -34,33 +40,37 @@ const LoadingScreen: React.FC<{ isComplete: boolean }> = ({ isComplete }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const progressPercent = progress.total > 0 
+    ? Math.round((progress.current / progress.total) * 100) 
+    : 0;
+
   return (
     <div className={`loading-overlay ${isComplete ? 'is-complete' : ''}`}>
       <div className="loading-container">
-        <div className="loading-orb-wrapper">
-          <div className="loading-orb-ring loading-orb-ring-1"></div>
-          <div className="loading-orb-ring loading-orb-ring-2"></div>
-          <div className="loading-orb-core-container">
-            <div className="loading-orb-core"></div>
-          </div>
-          <svg className="loading-orb-svg" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="1 10" />
-          </svg>
-        </div>
-
         <div className="loading-text-group">
           <h1 className="loading-title">Liquid Shuffle</h1>
-          <div className="loading-status-container" style={{ opacity: fade ? 0.4 : 0 }}>
+          <div className="loading-status-container" style={{ opacity: fade ? 0.6 : 0 }}>
             <p className="loading-status-text">{MESSAGES[msgIndex]}</p>
           </div>
-        </div>
-      </div>
-      
-      <div className="loading-footer">
-        <div className="loading-dots-wrapper">
-          <div className="loading-dot"></div>
-          <div className="loading-dot"></div>
-          <div className="loading-dot"></div>
+          
+          {progress.total > 0 && (
+            <div className="mt-10 flex flex-col items-center gap-4 w-64 animate-fade-in">
+              <div className="flex justify-between w-full">
+                <p className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">
+                  Hydrating Library
+                </p>
+                <p className="text-[10px] font-black text-blue-400 tracking-[0.1em]">
+                  {progress.current} / {progress.total}
+                </p>
+              </div>
+              <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all duration-300 ease-out"
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

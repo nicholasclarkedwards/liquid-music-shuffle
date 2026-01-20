@@ -1,17 +1,18 @@
+
 import React from 'react';
 import { AlbumArtworkViewProperties } from './albumArtworkProps';
-import { GlassCard } from '../../Common';
+import { GlassCard, InfoIcon } from '../../Common';
+import { RefreshCw } from 'lucide-react';
 
 const AlbumArtworkView: React.FC<AlbumArtworkViewProperties> = (props) => {
   if (props.isLoading) {
     return (
       <GlassCard className="artwork-card-base">
         <div className="artwork-loading-wrapper">
-          <div className="artwork-loading-spinner-container">
-            <div className="artwork-loading-spinner-outer"></div>
-            <div className="artwork-loading-spinner-inner"></div>
+          <div className="w-12 h-1 bg-blue-500/20 rounded-full overflow-hidden">
+            <div className="w-full h-full bg-blue-500 animate-[pulse_1s_infinite]"></div>
           </div>
-          <p className="artwork-loading-text">Syncing catalog...</p>
+          <p className="artwork-loading-text">Resolving Metadata...</p>
         </div>
       </GlassCard>
     );
@@ -73,10 +74,25 @@ const AlbumArtworkView: React.FC<AlbumArtworkViewProperties> = (props) => {
         <div className="artwork-meta-layout">
           <h2 className="artwork-title">{props.album.name}</h2>
           <p className="artwork-artist">{props.album.artist}</p>
-          <div className="artwork-badge-container">
-            <span className="artwork-badge-text">{props.album.releaseYear}</span>
-            <div className="artwork-badge-dot"></div>
-            <span className="artwork-badge-text">{props.album.genre}</span>
+          
+          <div className="flex items-center justify-center gap-3">
+            <div className="artwork-badge-container">
+              <span className="artwork-badge-text">{props.album.releaseYear}</span>
+              <div className="artwork-badge-dot"></div>
+              <span className="artwork-badge-text">{props.album.genre}</span>
+            </div>
+
+            <button 
+              onClick={(e) => {
+                  e.stopPropagation();
+                  props.onRefresh();
+              }}
+              className={`artwork-meta-refresh-btn has-tooltip tooltip-right-align ${props.isLoading ? 'is-loading' : ''}`}
+              title="Refresh Metadata"
+            >
+              <RefreshCw size={12} className={`refresh-icon ${props.isLoading ? 'animate-spin' : ''}`} />
+              <div className="tooltip">Sync artwork & info with current filter context</div>
+            </button>
           </div>
         </div>
       </div>

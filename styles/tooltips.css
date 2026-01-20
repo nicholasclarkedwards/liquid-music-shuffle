@@ -1,3 +1,4 @@
+
 .has-tooltip {
   position: relative;
 }
@@ -9,26 +10,66 @@
   transform: translateX(-50%) translateY(8px) scale(0.95);
   opacity: 0;
   visibility: hidden;
-  background: var(--menu-bg) !important;
-  backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
+  
+  /* Liquid Glass Aesthetic */
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  padding: 8px 16px;
-  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05) !important;
+  
+  padding: 10px 18px;
+  border-radius: 14px;
   width: max-content;
-  max-width: 220px;
-  color: white;
+  max-width: calc(100vw - 40px); /* Prevents bleeding past mobile screens */
+  
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   text-align: center;
   pointer-events: none;
-  z-index: 9999 !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 99999 !important;
+  
   transition: opacity 0.3s ease, transform 0.4s var(--menu-spring), visibility 0.3s ease;
+  line-height: 1.4;
 }
 
+/* Stable tooltips when parent rotates */
 .has-tooltip:hover .tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Contextual override for elements near the right edge */
+.tooltip-right-align .tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(8px) scale(0.95);
+}
+
+.tooltip-right-align:hover .tooltip {
+  transform: translateY(0) scale(1);
+}
+
+/* Small edge adjustment for left-side elements */
+.tooltip-left-align .tooltip {
+  left: 0;
+  transform: translateY(8px) scale(0.95);
+}
+
+.tooltip-left-align:hover .tooltip {
+  transform: translateY(0) scale(1);
+}
+
+/* Mobile specific refinement for touch interactions on iOS */
+@media (max-width: 640px) {
+  .tooltip {
+    font-size: 10px;
+    padding: 8px 14px;
+    bottom: 150%; /* Raise it slightly more for thumb visibility */
+  }
 }

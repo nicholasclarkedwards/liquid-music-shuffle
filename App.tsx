@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Filters, DiscoveryMode } from './types';
 import { useAlbumDiscovery } from './hooks/useAlbumDiscovery';
@@ -10,10 +11,10 @@ import {
   InfoIcon, 
   LoadingScreen 
 } from './components';
+import { syncFullLibrary } from './services/musicService';
 import { Toaster, toast } from 'react-hot-toast';
 import { Shuffle, Search, AlertCircle, Info } from 'lucide-react';
 
-// Custom SVG Icons for Toasts
 const IconError = () => (
   <AlertCircle size={20} className="text-red-500" strokeWidth={3} />
 );
@@ -32,6 +33,7 @@ const IconDiscoverAnimated = () => (
 
 const App: React.FC = () => {
   const [isBooting, setIsBooting] = useState(true);
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
   const [filters, setFilters] = useState<Filters>({
     decade: '',
     year: '',
@@ -41,13 +43,19 @@ const App: React.FC = () => {
   });
 
   const [persistentBg, setPersistentBg] = useState<string | undefined>(undefined);
-  const { fetchRandomAlbum, currentAlbum, isLoading, error } = useAlbumDiscovery(filters);
+  const { fetchRandomAlbum, currentAlbum, isLoading, error, refreshCurrent } = useAlbumDiscovery(filters);
 
   useEffect(() => {
     const boot = async () => {
       try {
+        // Now only loads JSON files, much faster!
+        await syncFullLibrary((current, total) => {
+          setSyncProgress({ current, total });
+        });
+        
+        // Pick an initial album from raw list
         await fetchRandomAlbum(DiscoveryMode.LIBRARY);
-        setTimeout(() => setIsBooting(false), 2000);
+        setTimeout(() => setIsBooting(false), 500);
       } catch (e) {
         setIsBooting(false);
       }
@@ -91,6 +99,16 @@ const App: React.FC = () => {
     toast.dismiss(toastId);
   };
 
+  const handleRefreshMetadata = async () => {
+    const toastId = toast("Updating Metadata...", { 
+        className: 'glass-toast-base glass-toast-info',
+        position: 'top-center',
+        duration: 5000 
+      });
+    await refreshCurrent();
+    toast.dismiss(toastId);
+  };
+
   const openAppleMusic = () => {
     if (currentAlbum?.appleMusicUrl) {
       window.open(currentAlbum.appleMusicUrl, '_blank');
@@ -108,7 +126,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start p-4 relative overflow-x-hidden">
-      <LoadingScreen isComplete={!isBooting} />
+      <LoadingScreen isComplete={!isBooting} progress={syncProgress} />
       <Toaster />
       <Background imageUrl={persistentBg} />
       
@@ -121,6 +139,7 @@ const App: React.FC = () => {
                 album={currentAlbum} 
                 isLoading={isLoading} 
                 onLaunch={openAppleMusic} 
+                onRefresh={handleRefreshMetadata}
               />
             </div>
 

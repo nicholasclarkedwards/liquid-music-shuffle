@@ -1,78 +1,96 @@
+
 import { Album } from "../types";
 
 /**
- * Validates if a result is a proper project.
- * Loosened trackCount requirement to 1 to capture EPs/Projects with missing metadata.
+ * iTunes API requires JSONP for client-side browser requests to avoid CORS issues.
  */
+const jsonpFetch = <T>(url: string): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const callbackName = `itunes_cb_${Math.floor(Math.random() * 1000000)}`;
+    const script = document.createElement('script');
+    
+    // Clean up function to remove script and global callback
+    const cleanup = () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      delete (window as any)[callbackName];
+    };
+
+    (window as any)[callbackName] = (data: T) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${callbackName}`;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error(`JSONP request failed for ${url}`));
+    };
+
+    // Auto-reject on timeout
+    setTimeout(() => {
+      if ((window as any)[callbackName]) {
+        cleanup();
+        reject(new Error(`JSONP request timed out for ${url}`));
+      }
+    }, 10000);
+
+    document.head.appendChild(script);
+  });
+};
+
 export const isValidAlbum = (result: any): boolean => {
   if (!result) return false;
   const primaryGenre = (result.primaryGenreName || "").toLowerCase();
-  
-  // Filter out obvious non-music projects
   if (primaryGenre.includes("karaoke") || primaryGenre.includes("fitness") || primaryGenre.includes("spoken word")) {
     return false;
   }
-
-  // Ensure it's a collection (album/EP) rather than a single track result (though search is set to entity=album)
   return !!result.collectionId;
 };
 
 export const fetchMetadataBySearch = async (title: string, artist?: string): Promise<Album> => {
-  // Clean the title and artist to remove common AI artifacts like "Album:" or quotes
   const cleanTitle = title.replace(/["']/g, "").trim();
   const cleanArtist = artist ? artist.replace(/["']/g, "").trim() : "";
 
   const performSearch = async (term: string) => {
-    const searchQuery = encodeURIComponent(term);
-    const response = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&limit=5`);
-    const data = await response.json();
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=5`;
+    console.log(`[ITunesService] Searching: ${url}`);
+    const data: any = await jsonpFetch(url);
     return data.results || [];
   };
 
-  // Attempt 1: Artist + Title
   let results = await performSearch(`${cleanArtist} ${cleanTitle}`);
-  
-  // Attempt 2: Title only (if Attempt 1 failed)
-  if (results.length === 0) {
-    results = await performSearch(cleanTitle);
-  }
-
-  // Attempt 3: Just the start of the title (handling long sub-titled albums)
-  if (results.length === 0 && cleanTitle.length > 10) {
-    results = await performSearch(cleanTitle.substring(0, 15));
-  }
+  if (results.length === 0) results = await performSearch(cleanTitle);
+  if (results.length === 0 && cleanTitle.length > 10) results = await performSearch(cleanTitle.substring(0, 15));
 
   const bestMatch = results.find(isValidAlbum) || results[0];
-
-  if (!bestMatch) {
-    throw new Error(`Catalog miss: "${cleanTitle}" by ${cleanArtist || 'Unknown'} not found.`);
-  }
+  if (!bestMatch) throw new Error(`Catalog miss: "${cleanTitle}" not found.`);
 
   return mapItunesToAlbum(bestMatch);
 };
 
 export const fetchArtistAlbum = async (artistName: string): Promise<Album> => {
-  const searchQuery = encodeURIComponent(artistName);
-  const response = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&attribute=artistTerm&limit=50`);
-  const data = await response.json();
-
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=album&attribute=artistTerm&limit=50`;
+  console.log(`[ITunesService] Fetching artist albums: ${url}`);
+  const data: any = await jsonpFetch(url);
   const results = (data.results || []).filter(isValidAlbum);
-
-  if (results.length === 0) {
-    throw new Error(`No projects found for artist "${artistName}".`);
-  }
-
-  const randomIndex = Math.floor(Math.random() * results.length);
-  return mapItunesToAlbum(results[randomIndex]);
+  if (results.length === 0) throw new Error(`No projects found for artist "${artistName}".`);
+  return mapItunesToAlbum(results[Math.floor(Math.random() * results.length)]);
 };
 
 export const fetchMetadataById = async (catalogId: string): Promise<Album> => {
-  const response = await fetch(`https://itunes.apple.com/lookup?id=${catalogId}&entity=album`);
-  const data = await response.json();
-  if (!data.results || data.results.length === 0) {
-    throw new Error("Catalog ID not found.");
+  // Handle comma separated IDs from albums.json
+  const firstId = catalogId.split(',')[0].trim();
+  const url = `https://itunes.apple.com/lookup?id=${firstId}&entity=album`;
+  console.log(`[ITunesService] Lookup by ID: ${url}`);
+  
+  try {
+    const data: any = await jsonpFetch(url);
+    if (!data.results || data.results.length === 0) throw new Error(`Catalog ID ${firstId} not found.`);
+    return mapItunesToAlbum(data.results[0]);
+  } catch (err: any) {
+    console.error(`[ITunesService] Fetch error for ID ${firstId}:`, err.message);
+    throw err;
   }
-  return mapItunesToAlbum(data.results[0]);
 };
 
 export const mapItunesToAlbum = (result: any): Album => ({
