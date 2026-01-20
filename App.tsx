@@ -4,7 +4,7 @@ import { useAlbumDiscovery } from './hooks/useAlbumDiscovery';
 import GlassCard from './components/Common/GlassCard';
 import Background from './components/Common/Background';
 import FilterPanel from './components/FilterPanel';
-import AlbumArtwork from './components/Album/AlbumArtwork';
+import AlbumArtwork from './components/Album/AlbumArtwork/albumArtwork';
 import ShuffleControls from './components/Controls/ShuffleControls';
 import InfoIcon from './components/Common/InfoIcon';
 import LoadingScreen from './components/Common/LoadingScreen';
