@@ -1,0 +1,83 @@
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.control-btn-wrapper {
+  width: 100%;
+}
+
+.control-btn {
+  width: 100%;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+
+.control-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Dedicated Icon Animations */
+
+.icon-shuffle-animated {
+  color: rgba(255, 255, 255, 0.7);
+  animation: shuffle-liquid 4s ease-in-out infinite;
+}
+
+.control-btn:hover .icon-shuffle-animated {
+  animation: shuffle-liquid 1.5s ease-in-out infinite;
+  color: #ffffff;
+}
+
+.icon-discover-animated {
+  color: rgba(255, 255, 255, 0.7);
+  animation: discover-sonar 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.control-btn:hover .icon-discover-animated {
+  animation: discover-sonar 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  color: #ffffff;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+}
+
+@keyframes shuffle-liquid {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.7;
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(5deg) scale(0.95);
+    opacity: 1;
+  }
+  75% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+}
+
+@keyframes discover-sonar {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2) translateY(-2px);
+    opacity: 1;
+  }
+}

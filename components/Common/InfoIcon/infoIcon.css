@@ -1,0 +1,16 @@
+.info-icon-container {
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-icon-svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  opacity: 0.3;
+  transition: opacity 300ms ease;
+}
+
+.info-icon-container:hover .info-icon-svg {
+  opacity: 1;
+}

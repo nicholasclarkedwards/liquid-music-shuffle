@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Filters, DiscoveryMode } from './types';
 import { useAlbumDiscovery } from './hooks/useAlbumDiscovery';
-import GlassCard from './components/Common/GlassCard';
-import Background from './components/Common/Background';
-import FilterPanel from './components/FilterPanel';
-import AlbumArtwork from './components/Album/AlbumArtwork/albumArtwork';
-import ShuffleControls from './components/Controls/ShuffleControls';
-import InfoIcon from './components/Common/InfoIcon';
-import LoadingScreen from './components/Common/LoadingScreen';
+import { 
+  GlassCard, 
+  Background, 
+  FilterPanel, 
+  AlbumArtwork, 
+  ShuffleControls, 
+  InfoIcon, 
+  LoadingScreen 
+} from './components';
 import { Toaster, toast } from 'react-hot-toast';
+import { Shuffle, Search, AlertCircle, Info } from 'lucide-react';
 
 // Custom SVG Icons for Toasts
 const IconError = () => (
-  <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>
-  </svg>
+  <AlertCircle size={20} className="text-red-500" strokeWidth={3} />
 );
 
 const IconMessage = () => (
-  <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-  </svg>
+  <Info size={20} className="text-blue-500" strokeWidth={3} />
 );
 
 const IconShuffleAnimated = () => (
-  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path className="animate-icon-shuffle-flow" d="M2 18c3 0 5-1 7-3 4-4 4-4 8-8 2-2 4-3 7-3" />
-    <path d="M17 4l3 3-3 3" />
-    <path className="animate-icon-shuffle-flow" style={{ animationDelay: '-0.75s' }} d="M2 6c3 0 5 1 7 3 4 4 4 4 8 8 2 2 4 3 7 3" />
-    <path d="M17 20l3-3-3-3" />
-  </svg>
+  <Shuffle size={18} className="icon-shuffle-animated text-white" />
 );
 
 const IconDiscoverAnimated = () => (
-  <svg className="w-5 h-5 text-blue-400 animate-icon-discover" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-  </svg>
+  <Search size={18} className="icon-discover-animated text-white" />
 );
 
 const App: React.FC = () => {

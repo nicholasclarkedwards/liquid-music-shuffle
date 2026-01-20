@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/main.css';
-import './styles/albumArtwork.css';
+import './styles/tooltips.css';
+import './styles/toasts.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
