@@ -10,7 +10,7 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", imageUr
   return (
     <div className={`liquid-glass rounded-[2rem] p-5 md:p-6 relative transition-all duration-700 ${className}`}>
       {/* Internal Color Fill Layer */}
-      <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none isolate">
+      <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
         {/* Album Color Fill - Secondary soft glow */}
         <div 
           className={`absolute inset-0 bg-center bg-cover blur-[100px] scale-150 transform-gpu transition-opacity duration-1000 ${imageUrl ? 'opacity-40' : 'opacity-0'}`}
@@ -28,11 +28,11 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", imageUr
         </div>
 
         {/* Base Glass Tint */}
-        <div className="absolute inset-0 bg-white/[0.015] backdrop-blur-3xl shadow-inner border border-white/5"></div>
+        <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-3xl shadow-inner border border-white/10"></div>
       </div>
       
-      {/* Content layer */}
-      <div className="relative z-10 h-full flex flex-col isolate">
+      {/* Content layer - Removed 'isolate' to fix z-index bleed for tooltips */}
+      <div className="relative z-10 h-full flex flex-col">
         {children}
       </div>
     </div>

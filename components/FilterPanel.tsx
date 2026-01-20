@@ -73,7 +73,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
 
   const getYearsInDecade = (dec: string) => {
     if (!dec || dec === "Any") return [];
-    // Fixed typo: 'Decade' was undefined, replaced with the 'dec' parameter's substring.
     const start = parseInt(dec.substring(0, 4));
     return ["Any", ...Array.from({ length: 10 }, (_, i) => (start + i).toString())];
   };
@@ -172,7 +171,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           </div>
           
           {showSuggestions && (
-            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[1.2rem] bg-black/60 backdrop-blur-[40px] saturate-[200%] border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden bubbly-pop">
+            <div className="absolute top-[105%] left-0 right-0 z-[100] mt-1 rounded-[1.2rem] liquid-menu-base shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden bubbly-pop origin-top">
               <div className="max-h-52 overflow-y-auto custom-glass-scrollbar">
                 {suggestions.map((artist, idx) => (
                   <button

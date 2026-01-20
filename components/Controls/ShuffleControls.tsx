@@ -13,9 +13,9 @@ const ShuffleControls: React.FC<ShuffleControlsProps> = ({ onShuffle, isLoading 
         <button 
           onClick={() => onShuffle(DiscoveryMode.LIBRARY)}
           disabled={isLoading}
-          className="w-full py-3 rounded-full glass-button-base text-white/90 font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl"
+          className="w-full py-3.5 rounded-full glass-button-base text-white font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-5 h-5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 18c3 0 5-1 7-3 4-4 4-4 8-8 2-2 4-3 7-3" />
             <path d="M17 4l3 3-3 3" />
             <path d="M2 6c3 0 5 1 7 3 4 4 4 4 8 8 2 2 4 3 7 3" />
@@ -30,9 +30,9 @@ const ShuffleControls: React.FC<ShuffleControlsProps> = ({ onShuffle, isLoading 
         <button 
           onClick={() => onShuffle(DiscoveryMode.TASTE)}
           disabled={isLoading}
-          className="w-full py-3 rounded-full glass-button-base text-white/90 font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl"
+          className="w-full py-3.5 rounded-full glass-button-base text-white font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 disabled:opacity-20 shadow-xl"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 opacity-60" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8"/>
             <path d="m21 21-4.3-4.3"/>
           </svg>
