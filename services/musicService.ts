@@ -4,7 +4,15 @@ import { Album, Filters, DiscoveryMode } from "../types";
 import { fetchMetadataBySearch, fetchMetadataById, mapItunesToAlbum } from "./itunesService";
 import { loadPersistentCache, saveToPersistentCache } from "./cacheService";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazily initialize AI only when needed to avoid runtime errors
+// if an API key is not configured. This prevents crashes on import.
+const getAI = () => {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim().length === 0) {
+    throw new Error("AI discovery is disabled: missing API key.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 let cachedArtists: any[] | null = null;
 let rawAlbumsPool: any[] = [];
@@ -43,6 +51,7 @@ export const resetSessionHistory = () => {
  */
 export const syncFullLibrary = async (onProgress?: (current: number, total: number) => void): Promise<void> => {
   try {
+    debugger;
     const [artistsRes, albumsRes] = await Promise.all([
       fetch('./artists.json'),
       fetch('./albums.json')
@@ -197,6 +206,8 @@ export const refreshAlbumMetadata = async (currentAlbum: Album, filters: Filters
 };
 
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
+  // Ensure AI can be used; otherwise surface a friendly error
+  const ai = getAI();
   const contextPool = rawAlbumsPool.slice(0, 20).map(a => a.Title).join(", ");
   const exclusions = Array.from(sessionSeenTitles).slice(-10).join(", ");
   const seed = Math.random().toString(36).substring(7);
