@@ -2,6 +2,7 @@
 export interface Album {
   id: string;
   name: string;
+  originalName: string; // The exact string from albums.json
   artist: string;
   artworkUrl: string;
   releaseYear: number;

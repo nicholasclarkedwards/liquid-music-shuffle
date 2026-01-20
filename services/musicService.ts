@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
-import { fetchMetadataBySearch, fetchMetadataById } from "./itunesService";
+import { fetchMetadataBySearch, fetchMetadataById, mapItunesToAlbum } from "./itunesService";
 import { loadPersistentCache, saveToPersistentCache } from "./cacheService";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -30,8 +30,6 @@ export const getLibraryStatus = () => ({
  * Boots the library data only. No metadata fetching until needed.
  */
 export const syncFullLibrary = async (onProgress?: (current: number, total: number) => void): Promise<void> => {
-  console.log("[LibrarySync] Loading local data files...");
-
   try {
     const [artistsRes, albumsRes] = await Promise.all([
       fetch('./artists.json'),
@@ -49,12 +47,10 @@ export const syncFullLibrary = async (onProgress?: (current: number, total: numb
     
     // Store raw entries from JSON
     rawAlbumsPool = (albumsData || []).filter((item: any) => {
-      // visible and has either title OR a catalog ID
       return isVisible(item) && (item.Title || item["Catalog Identifiers - Album"]);
     });
 
     isLibraryReady = true;
-    console.log(`[LibrarySync] Data loaded. ${rawAlbumsPool.length} entries ready for on-demand hydration.`);
     if (onProgress) onProgress(rawAlbumsPool.length, rawAlbumsPool.length);
   } catch (err) {
     console.error("[LibrarySync] Boot failure:", err);
@@ -89,33 +85,37 @@ const matchesMetadataFilters = (album: Album, filters: Filters): boolean => {
 /**
  * Hydrates a single entry, checking cache first.
  */
-export const hydrateAlbum = async (entry: any): Promise<Album> => {
+export const hydrateAlbum = async (entry: any, filters?: Filters): Promise<Album> => {
   const catalogId = entry["Catalog Identifiers - Album"];
-  const title = entry.Title || "Unknown Title";
-  // albums.json doesn't have Artist, but we might have found it previously
-  const artist = entry.Artist || undefined; 
+  const originalTitle = entry.Title || "Unknown Title";
   
   const cache = loadPersistentCache();
-  const cacheId = catalogId ? catalogId.split(',')[0].trim() : `${normalizeString(title)}_${normalizeString(artist || 'none')}`;
+  // Cache key is the ID or the normalized original title to ensure we don't duplicate
+  const cacheId = catalogId ? catalogId.split(',')[0].trim() : normalizeString(originalTitle);
   
-  const cached = cache[cacheId] || Object.values(cache).find(a => a.id === cacheId);
+  const cached = cache[cacheId];
   if (cached) {
     console.log(`[Cache] Hit: "${cached.name}"`);
     return cached;
   }
 
-  console.log(`[Hydration] Miss: Resolving "${title}"...`);
+  console.log(`[Hydration] Miss: Resolving "${originalTitle}"...`);
   let album: Album;
+  const searchArtist = filters?.artist || undefined;
+
   if (catalogId) {
     try {
       album = await fetchMetadataById(catalogId);
     } catch {
-      album = await fetchMetadataBySearch(title, artist);
+      album = await fetchMetadataBySearch(originalTitle, searchArtist);
     }
   } else {
-    album = await fetchMetadataBySearch(title, artist);
+    album = await fetchMetadataBySearch(originalTitle, searchArtist);
   }
 
+  // FORCE originalName to be the string from the library file
+  album.originalName = originalTitle;
+  
   saveToPersistentCache(album);
   return album;
 };
@@ -125,21 +125,17 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
 
   let pool = [...rawAlbumsPool];
   
-  // Note: albums.json doesn't have an Artist field. 
-  // If the user filtered by Artist, we check the Title for now as a loose match
-  // or we rely on the hydration loop to filter correctly if Artist was already cached.
   if (filters.artist && filters.artist.trim() !== "") {
     const nFilter = normalizeString(filters.artist);
-    pool = pool.filter(entry => 
-      (entry.Artist && normalizeString(entry.Artist).includes(nFilter)) || 
-      normalizeString(entry.Title).includes(nFilter)
-    );
+    // Loose matching on title if artist isn't in JSON
+    pool = pool.filter(entry => normalizeString(entry.Title).includes(nFilter));
+    if (pool.length === 0) pool = [...rawAlbumsPool];
   }
 
   if (pool.length === 0) throw new Error("No albums match your search.");
 
   let attempts = 0;
-  const maxAttempts = 30;
+  const maxAttempts = 20;
 
   while (attempts < maxAttempts) {
     attempts++;
@@ -147,41 +143,43 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
     const entry = pool[randomIndex];
     
     try {
-      const album = await hydrateAlbum(entry);
+      const album = await hydrateAlbum(entry, filters);
+      
       if (matchesMetadataFilters(album, filters)) {
-        // Double check artist filter if it was set
         if (filters.artist && filters.artist.trim() !== "") {
            const nFilter = normalizeString(filters.artist);
-           if (!normalizeString(album.artist).includes(nFilter) && !normalizeString(album.name).includes(nFilter)) {
+           if (!normalizeString(album.artist).includes(nFilter)) {
               pool.splice(randomIndex, 1);
-              if (pool.length === 0) break;
               continue;
            }
         }
         return album;
       }
       pool.splice(randomIndex, 1);
-      if (pool.length === 0) break;
     } catch (e) {
       pool.splice(randomIndex, 1);
-      if (pool.length === 0) break;
     }
+    if (pool.length === 0) break;
   }
 
   throw new Error("Could not find a match within your criteria. Try loosening your filters.");
 };
 
 export const refreshAlbumMetadata = async (currentAlbum: Album, filters: Filters): Promise<Album> => {
-  const searchTitle = currentAlbum.name;
-  const searchArtist = currentAlbum.artist;
-  const refreshed = await fetchMetadataBySearch(searchTitle, searchArtist);
+  // Use the original source file name + current filter context for the most accurate re-lookup
+  const sourceName = currentAlbum.originalName || currentAlbum.name;
+  console.log(`[Refresh] Re-resolving "${sourceName}" with artist filter: "${filters.artist}"`);
+  
+  const refreshed = await fetchMetadataBySearch(sourceName, filters.artist);
+  
+  // Re-pin the original name to the refreshed object
+  refreshed.originalName = sourceName;
+  
   saveToPersistentCache(refreshed);
   return refreshed;
 };
 
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
-  console.log(`[AI Discovery] Mode: ${mode}`);
-  // provide a small subset for context if possible
   const contextPool = rawAlbumsPool.slice(0, 20).map(a => a.Title).join(", ");
   const seed = Math.random().toString(36).substring(7);
 
@@ -201,10 +199,10 @@ export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode):
 
     const rec = JSON.parse(response.text.trim());
     const album = await fetchMetadataBySearch(rec.albumName, rec.artistName);
-    sessionSuggestions.add(`${album.name} - ${album.artist}`);
+    album.originalName = rec.albumName; 
     return album;
   } catch (err: any) {
     console.error("[AI Discovery] Error:", err);
-    throw new Error("Discovery engine unreachable. Try the Library Shuffle.");
+    throw new Error("Discovery engine unreachable.");
   }
 };

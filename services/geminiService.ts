@@ -13,10 +13,8 @@ export const discoverAlbum = async (filters: Filters, mode: DiscoveryMode): Prom
     filters.artist && `Artist: ${filters.artist}`
   ].filter(Boolean).join(", ");
 
-  // Create a high-entropy random seed to prevent repeating the same few albums
   const randomSeed = Math.random().toString(36).substring(7) + Date.now();
 
-  // Step 1: Get a recommendation from Gemini
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Recommend a single real music album based on these criteria: ${filterSummary || 'An influential, critically acclaimed album'}. 
@@ -39,13 +37,11 @@ export const discoverAlbum = async (filters: Filters, mode: DiscoveryMode): Prom
 
   const recommendation = JSON.parse(response.text);
 
-  // Step 2: Fetch metadata from iTunes Search API
   const searchQuery = encodeURIComponent(`${recommendation.albumName} ${recommendation.artistName}`);
   const itunesResponse = await fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=album&limit=1`);
   const itunesData = await itunesResponse.json();
 
   if (!itunesData.results || itunesData.results.length === 0) {
-    // Fallback search if exact match fails
     const fallbackQuery = encodeURIComponent(recommendation.albumName);
     const fallbackResponse = await fetch(`https://itunes.apple.com/search?term=${fallbackQuery}&entity=album&limit=1`);
     const fallbackData = await fallbackResponse.json();
@@ -53,19 +49,18 @@ export const discoverAlbum = async (filters: Filters, mode: DiscoveryMode): Prom
     if (!fallbackData.results || fallbackData.results.length === 0) {
       throw new Error("Could not find this album in the Apple Music catalog.");
     }
-    const fallbackResult = fallbackData.results[0];
-    return mapItunesToAlbum(fallbackResult);
+    return mapItunesToAlbum(fallbackData.results[0], recommendation.albumName);
   }
 
-  const result = itunesData.results[0];
-  return mapItunesToAlbum(result);
+  return mapItunesToAlbum(itunesData.results[0], recommendation.albumName);
 };
 
-const mapItunesToAlbum = (result: any): Album => ({
+const mapItunesToAlbum = (result: any, originalName?: string): Album => ({
   id: result.collectionId.toString(),
   name: result.collectionName,
+  originalName: originalName || result.collectionName,
   artist: result.artistName,
-  artworkUrl: result.artworkUrl100.replace('100x100bb', '800x800bb'), // Even higher res
+  artworkUrl: result.artworkUrl100.replace('100x100bb', '800x800bb'),
   releaseYear: new Date(result.releaseDate).getFullYear(),
   genre: result.primaryGenreName,
   appleMusicUrl: result.collectionViewUrl,
