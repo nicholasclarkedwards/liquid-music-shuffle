@@ -67,6 +67,32 @@ body {
   font-size: 13px !important;
 }
 
+/* Liquid Glass Toast System - Pill Shaped & Ultra Frosted */
+.glass-toast-base {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(35px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
+  border-radius: 9999px !important;
+  padding: 10px 24px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Standardized glass border */
+  min-width: 220px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* Unified borders for all variants to match the app-wide glass style */
+.glass-toast-info, .glass-toast-success, .glass-toast-error {
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
 /* Light Cohesive Glass for Menus/Tooltips */
 .liquid-menu-base {
   background: var(--menu-bg) !important;
