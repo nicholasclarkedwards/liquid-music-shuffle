@@ -13,12 +13,58 @@
   --menu-exit: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
+*, body, button, input, select, textarea, h1, h2, h3, h4, p, span {
+  font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #040406;
+  color: white;
+  overflow-x: hidden;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .liquid-glass {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--glass-border) !important;
   box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.55);
+}
+
+/* Hardened Input Container Styling - Standardized for all dropdowns and inputs */
+.glass-input-container {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-sizing: border-box !important;
+  display: flex;
+  align-items: center;
+  transition: all 0.5s var(--menu-spring);
+  height: 44px !important;
+  border-radius: 999px !important;
+}
+
+.glass-input-container:focus-within, .glass-input-container.is-active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.glass-input-container input {
+  background: transparent !important;
+  color: white !important;
+  border: none !important;
+  outline: none !important;
+  font-weight: 600;
+  width: 100%;
+  height: 100%;
+  padding: 0 20px;
+  font-size: 13px !important;
 }
 
 /* Light Cohesive Glass for Menus/Tooltips */
@@ -28,23 +74,7 @@
   -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.4) !important;
-}
-
-.glass-input-container {
-  background: rgba(255, 255, 255, 0.035) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-sizing: border-box !important;
-  display: flex;
-  align-items: center;
-  transition: all 0.5s var(--menu-spring);
-  height: 42px !important; /* Standardized height */
-}
-
-.glass-input-container:focus-within {
-  background: rgba(255, 255, 255, 0.07) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
+  overflow: hidden;
 }
 
 /* Master Glass Buttons */
@@ -61,7 +91,7 @@
   transform: translateY(-1px);
 }
 
-/* Tooltip System - Now using Prism Glass */
+/* Tooltip System */
 .has-tooltip {
   position: relative;
 }
@@ -73,12 +103,10 @@
   transform: translateX(-50%) translateY(8px) scale(0.95);
   opacity: 0;
   visibility: hidden;
-  
   background: var(--menu-bg) !important;
   backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
   -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  
   padding: 8px 16px;
   border-radius: 12px;
   width: max-content;
@@ -90,11 +118,7 @@
   pointer-events: none;
   z-index: 9999 !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  
-  transition: 
-    opacity 0.3s ease,
-    transform 0.4s var(--menu-spring),
-    visibility 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.4s var(--menu-spring), visibility 0.3s ease;
 }
 
 .has-tooltip:hover .tooltip {
@@ -103,7 +127,7 @@
   transform: translateX(-50%) translateY(0) scale(1);
 }
 
-/* Dropdown Etched Selection - No Colors */
+/* Dropdown Etched Selection */
 .dropdown-item-selected {
   background: rgba(0, 0, 0, 0.25) !important;
   color: white !important;
@@ -111,7 +135,7 @@
 
 .dropdown-item {
   color: rgba(255, 255, 255, 0.45);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .dropdown-item:hover:not(.dropdown-item-selected) {
@@ -146,5 +170,13 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in {
-  animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes soft-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+.animate-soft-pulse {
+  animation: soft-pulse 3s ease-in-out infinite;
 }

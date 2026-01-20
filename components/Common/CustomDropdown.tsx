@@ -38,9 +38,9 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
       {/* Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`glass-input-container w-full px-5 flex items-center justify-between transition-all duration-500 rounded-full ${isOpen ? 'bg-white/[0.1] border-white/30' : ''}`}
+        className={`glass-input-container w-full px-5 flex items-center justify-between transition-all duration-500 rounded-full ${isOpen ? 'is-active' : ''}`}
       >
-        <span className={`text-[12px] font-bold tracking-tight ${value && value !== 'Any' ? 'text-white' : 'text-white/40'}`}>
+        <span className={`text-[12px] font-semibold tracking-tight ${value && value !== 'Any' ? 'text-white' : 'text-white/40'}`}>
           {displayValue}
         </span>
         <svg 
@@ -73,7 +73,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
               <button
                 key={option}
                 onClick={() => handleSelect(option)}
-                className={`w-full text-left px-5 h-[42px] flex items-center text-[10px] font-black transition-all tracking-[0.15em] uppercase dropdown-item ${
+                className={`w-full text-left px-5 h-[44px] flex items-center text-[10px] font-black transition-all tracking-[0.15em] uppercase dropdown-item ${
                   isSelected ? 'dropdown-item-selected' : ''
                 }`}
               >

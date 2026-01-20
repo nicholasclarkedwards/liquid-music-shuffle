@@ -113,7 +113,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
                 onChange={(val) => handleChange('year', val)}
               />
             ) : (
-              <div className="glass-input-container px-4 rounded-full">
+              <div className="glass-input-container px-1">
                 <input 
                   type="text"
                   placeholder="Enter year..."
@@ -126,9 +126,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           </div>
         </div>
 
-        {/* Row 2: Month & Genre */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col">
+        {/* Row 2: Month (Full Row, Only if year is selected) */}
+        {filters.year && filters.year !== "Any" && (
+          <div className="flex flex-col w-full">
             <label className={labelClass}>Release Month</label>
             <CustomDropdown 
               label="Month"
@@ -137,22 +137,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
               onChange={(val) => handleChange('month', val)}
             />
           </div>
+        )}
 
-          <div className="flex flex-col">
-            <label className={labelClass}>Musical Genre</label>
-            <CustomDropdown 
-              label="Genre"
-              options={["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"]}
-              value={filters.genre}
-              onChange={(val) => handleChange('genre', val)}
-            />
-          </div>
+        {/* Row 3: Genre */}
+        <div className="flex flex-col w-full">
+          <label className={labelClass}>Musical Genre</label>
+          <CustomDropdown 
+            label="Genre"
+            options={["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"]}
+            value={filters.genre}
+            onChange={(val) => handleChange('genre', val)}
+          />
         </div>
 
-        {/* Row 3: Artist Pool */}
-        <div className="flex flex-col relative" ref={suggestionRef}>
+        {/* Row 4: Artist Pool */}
+        <div className="flex flex-col relative w-full" ref={suggestionRef}>
           <label className={labelClass}>Artist Pool</label>
-          <div className="glass-input-container px-4 rounded-full">
+          <div className="glass-input-container px-1">
             <input 
               type="text"
               placeholder="Search library artists..."
@@ -173,7 +174,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
                       handleChange('artist', artist);
                       setShowSuggestions(false);
                     }}
-                    className="w-full text-left px-5 h-[40px] flex items-center text-[10px] font-bold text-white/50 hover:text-white hover:bg-black/20 transition-all uppercase tracking-widest"
+                    className="w-full text-left px-5 h-[44px] flex items-center text-[10px] font-bold text-white/50 hover:text-white hover:bg-black/20 transition-all uppercase tracking-widest"
                   >
                     {artist}
                   </button>
