@@ -1,13 +1,14 @@
+
 /* Liquid Shuffle Core Framework */
 
 :root {
   --glass-blur: 40px;
   --glass-saturate: 210%;
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.08);
   
-  --menu-bg: rgba(255, 255, 255, 0.07);
-  --menu-blur: 60px;
+  --menu-bg: rgba(255, 255, 255, 0.08);
+  --menu-blur: 40px;
   --menu-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
   --menu-exit: cubic-bezier(0.19, 1, 0.22, 1);
 }
@@ -25,6 +26,7 @@ body {
   overflow-x: hidden;
   min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none; /* Prevents whole-page rubber-banding on empty space */
 }
 
 /* Global Glass Input Primitives */
@@ -62,9 +64,10 @@ body {
   background: var(--menu-bg) !important;
   backdrop-filter: blur(var(--menu-blur)) saturate(200%) !important;
   -webkit-backdrop-filter: blur(var(--menu-blur)) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05) !important;
   overflow: hidden;
+  border-radius: 32px !important; /* Standardized rounder radius */
 }
 
 .glass-button-base {

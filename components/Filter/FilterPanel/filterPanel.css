@@ -1,3 +1,4 @@
+
 /* Filter Panel Component Styles - Standard CSS */
 
 .filter-panel-container {
@@ -43,22 +44,27 @@
   left: 0;
   right: 0;
   z-index: 100;
-  margin-top: 0.25rem;
-  border-radius: 1.2rem;
+  margin-top: 0.5rem;
+  border-radius: 32px;
   overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform-origin: top;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
 }
 
 .suggestions-list {
   max-height: 13rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+  overscroll-behavior: auto; /* Fixed Safari scroll chaining */
+  touch-action: pan-y;
 }
 
 .suggestion-item {
   width: 100%;
   text-align: left;
   padding: 0 1.25rem;
+  margin-bottom: 4px;
   height: 44px;
   display: flex;
   align-items: center;
@@ -67,13 +73,19 @@
   color: rgba(255, 255, 255, 0.5);
   background: transparent;
   border: none;
+  border-radius: 24px;
   transition: all 200ms ease;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.suggestion-item:last-child {
+  margin-bottom: 0;
 }
 
 .suggestion-item:hover {
   color: #ffffff;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
 }

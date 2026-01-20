@@ -49,7 +49,9 @@ export const isValidAlbum = (result: any): boolean => {
 
 export const fetchMetadataBySearch = async (title: string, artist?: string): Promise<Album> => {
   const cleanTitle = title.replace(/["']/g, "").trim();
-  const cleanArtist = artist ? artist.replace(/["']/g, "").trim() : "";
+  // Don't use placeholder artist names in actual API queries
+  const isPlaceholderArtist = !artist || artist === "Unknown Artist" || artist === "Unknown";
+  const cleanArtist = !isPlaceholderArtist ? artist!.replace(/["']/g, "").trim() : "";
 
   const performSearch = async (term: string) => {
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=5`;
@@ -58,9 +60,18 @@ export const fetchMetadataBySearch = async (title: string, artist?: string): Pro
     return data.results || [];
   };
 
-  let results = await performSearch(`${cleanArtist} ${cleanTitle}`);
-  if (results.length === 0) results = await performSearch(cleanTitle);
-  if (results.length === 0 && cleanTitle.length > 10) results = await performSearch(cleanTitle.substring(0, 15));
+  // Primary search: Artist + Title if possible, else just Title
+  let results = cleanArtist 
+    ? await performSearch(`${cleanArtist} ${cleanTitle}`) 
+    : await performSearch(cleanTitle);
+
+  if (results.length === 0 && cleanArtist) {
+    results = await performSearch(cleanTitle);
+  }
+  
+  if (results.length === 0 && cleanTitle.length > 15) {
+    results = await performSearch(cleanTitle.substring(0, 15));
+  }
 
   const bestMatch = results.find(isValidAlbum) || results[0];
   if (!bestMatch) throw new Error(`Catalog miss: "${cleanTitle}" not found.`);
@@ -88,7 +99,8 @@ export const fetchMetadataById = async (catalogId: string): Promise<Album> => {
     if (!data.results || data.results.length === 0) throw new Error(`Catalog ID ${firstId} not found.`);
     return mapItunesToAlbum(data.results[0]);
   } catch (err: any) {
-    console.error(`[ITunesService] Fetch error for ID ${firstId}:`, err.message);
+    // Log as warning because the app is designed to fall back to search automatically
+    console.warn(`[ITunesService] ID Lookup failed for ${firstId}: ${err.message}. Triggering search fallback.`);
     throw err;
   }
 };

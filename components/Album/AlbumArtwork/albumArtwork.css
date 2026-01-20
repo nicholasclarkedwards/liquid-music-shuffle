@@ -2,12 +2,13 @@
 /* Liquid Shuffle Artwork Styles */
 
 .artwork-meta-refresh-btn {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem; /* Increased to 44px for iOS tap target standards */
+  height: 2.75rem;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px); /* Essential for iOS Safari */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.4);
   display: flex;
   align-items: center;
@@ -16,10 +17,13 @@
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .refresh-icon {
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform; /* Hint for Safari GPU acceleration */
 }
 
 .artwork-meta-refresh-btn:hover {
@@ -99,6 +103,7 @@
   position: relative;
   overflow: visible !important;
   min-height: 460px;
+  transform: translate3d(0,0,0); /* Force Layer creation for Safari */
 }
 
 .artwork-main-layout {
@@ -115,6 +120,7 @@
   height: 310px;
   margin-bottom: 2rem;
   position: relative;
+  will-change: transform;
 }
 
 .artwork-image-glow {
@@ -150,10 +156,11 @@
   border-radius: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translate3d(0,0,0);
 }
 
 .artwork-image-container:hover .artwork-image-inner-wrapper {
-  transform: scale(1.03);
+  transform: scale(1.03) translate3d(0,0,0);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -196,6 +203,7 @@
   background-color: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.4);
   transition: all 300ms ease;
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .artwork-play-button:hover {
@@ -263,6 +271,7 @@
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
   filter: saturate(180%);
 }
 

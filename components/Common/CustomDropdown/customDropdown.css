@@ -1,3 +1,4 @@
+
 /* Custom Dropdown Component Styles - Standard CSS */
 
 .dropdown-container {
@@ -16,6 +17,7 @@
   border-radius: 9999px;
   background: transparent;
   border: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dropdown-value {
@@ -47,9 +49,9 @@
   left: 0;
   right: 0;
   z-index: 9999;
-  border-radius: 1.5rem;
+  border-radius: 32px;
   overflow: hidden;
-  transition: all 400ms;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform-origin: top;
   opacity: 0;
   transform: scale(0.95) translateY(-0.5rem);
@@ -65,12 +67,17 @@
 .dropdown-scroll-area {
   max-height: 220px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+  overscroll-behavior: auto; /* Fixed Safari scroll chaining */
+  touch-action: pan-y; /* GPU hint for Safari vertical scrolling */
 }
 
 .dropdown-option {
   width: 100%;
   text-align: left;
   padding: 0 1.25rem;
+  margin-bottom: 4px;
   height: 44px;
   display: flex;
   align-items: center;
@@ -81,20 +88,26 @@
   text-transform: uppercase;
   background: transparent;
   border: none;
+  border-radius: 24px; /* More rounded items */
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dropdown-option:last-child {
+  margin-bottom: 0;
 }
 
 .dropdown-item-selected {
-  background: rgba(0, 0, 0, 0.25) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   color: #ffffff !important;
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
 .dropdown-item {
   color: rgba(255, 255, 255, 0.45);
-  transition: all 0.2s ease;
 }
 
 .dropdown-item:hover:not(.dropdown-item-selected) {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
