@@ -1,11 +1,10 @@
-
 .discovery-view-container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
   width: 100%;
-  padding: 1.5rem;
+  padding: 2rem 1rem;
   box-sizing: border-box;
   animation: discoveryFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   position: relative;
@@ -17,7 +16,7 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 420px; /* Accommodates 320px art + padding */
   margin: 0 auto;
 }
 
@@ -30,6 +29,7 @@
 .discovery-config-card {
   height: auto;
   min-height: min-content;
+  padding: 2rem 1.5rem !important; /* Unified Padding */
 }
 
 .discovery-card-inner {
@@ -53,7 +53,7 @@
 }
 
 .discovery-header-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -94,39 +94,32 @@
 }
 
 .discovery-card-footer {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
-/* Tablet & Desktop Side-by-Side */
 @media (min-width: 900px) {
   .discovery-layout-grid {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: auto;
-    align-items: start;
-    max-width: 1050px;
+    align-items: stretch;
+    max-width: 880px;
     gap: 2.5rem;
   }
 
   .discovery-column {
-    height: auto;
+    height: 100%;
   }
 
   .artwork-col {
     position: sticky;
-    top: 1.5rem;
+    top: 2rem;
   }
 }
 
 @keyframes discoveryFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }

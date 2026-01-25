@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { DiscoveryViewProps } from './discoveryViewProps';
-import { AlbumArtwork, GlassCard, InfoIcon, FilterPanel } from '../../components';
+import { AlbumArtwork, GlassCard, InfoIcon, FilterPanel, ShuffleControls } from '../../components';
 import './discoveryView.css';
 
 const DiscoveryView: React.FC<DiscoveryViewProps> = (props) => {
@@ -42,6 +41,13 @@ const DiscoveryView: React.FC<DiscoveryViewProps> = (props) => {
               </div>
 
               <FilterPanel filters={props.filters} setFilters={props.setFilters} />
+
+              <div className="discovery-card-footer">
+                <ShuffleControls 
+                  onShuffle={props.onShuffle}
+                  isLoading={props.isLoading}
+                />
+              </div>
             </div>
           </GlassCard>
         </div>

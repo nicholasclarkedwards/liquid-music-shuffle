@@ -20,15 +20,15 @@ const StarRatingView: React.FC<StarRatingViewProps> = ({
   isBusy, 
   handleClick 
 }) => {
-  const starSize = size === 'lg' ? 18 : 10;
+  const starSize = size === 'lg' ? 20 : 12;
   const gap = size === 'lg' ? 'gap-1.5' : 'gap-0.5';
 
   return (
     <div className={`flex ${gap} ${className}`}>
       {[1, 2, 3, 4, 5].map((s) => {
         const isAnimating = isBusy && s <= animatingRating;
-        // Static "Active" state only applies when not currently animating
-        const isActive = !isAnimating && s <= (hover || rating);
+        const isActive = s <= (hover || rating);
+        const shouldFill = isActive || isAnimating;
         
         return (
           <button
@@ -36,8 +36,8 @@ const StarRatingView: React.FC<StarRatingViewProps> = ({
             onClick={(e) => handleClick(e, s)}
             onMouseEnter={() => setHover(s)}
             onMouseLeave={() => setHover(0)}
-            className={`star-btn transform active:scale-150 transition-all ${
-              isActive ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'text-white/20'
+            className={`star-btn transform active:scale-150 transition-all duration-200 ${
+              isActive ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-white/20'
             } ${isAnimating ? 'star-sequence-anim' : ''}`}
             style={{ 
               animationDelay: isAnimating ? `${s * 60}ms` : '0ms'
@@ -45,7 +45,7 @@ const StarRatingView: React.FC<StarRatingViewProps> = ({
           >
             <Star 
               size={starSize} 
-              fill={isActive || isAnimating ? "currentColor" : "rgba(255,255,255,0.05)"} 
+              fill={shouldFill ? "currentColor" : "none"} 
               strokeWidth={size === 'lg' ? 2.5 : 3} 
               className="will-change-transform"
             />

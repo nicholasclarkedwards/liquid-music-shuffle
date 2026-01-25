@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Album, Track } from '../../types';
 import { ArrowLeft, Heart, Music, MessageSquareText, Save } from 'lucide-react';
-import { getTrackHeartedIds, toggleTrackHearted, getRating, setRating, getHeartedIds, toggleHearted, getAlbumReview, setAlbumReview } from '../../services/musicService';
-import { GlassCard, StarRating } from '../../components/Common';
+import { getTrackHeartedIds, toggleTrackHearted, getRating, setRating, getHeartedIds, toggleHearted, getAlbumReview, setAlbumReview, getTrackReview, setTrackReview } from '../../services/musicService';
+import { GlassCard, StarRating, ThoughtModal } from '../../components/Common';
 import { toast } from 'react-hot-toast';
 import './albumDetailView.css';
 
@@ -11,10 +11,13 @@ interface AlbumDetailViewProps {
   onBack: () => void;
 }
 
-const TrackItem = ({ track }: { track: Track }) => {
+const TrackItem: React.FC<{ track: Track; artworkUrl: string }> = ({ track, artworkUrl }) => {
   const [isHearted, setIsHearted] = useState(getTrackHeartedIds().has(track.id));
+  const [isHovered, setIsHovered] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [rating, setLocalRating] = useState(getRating(track.id));
+  const [isThoughtModalOpen, setIsThoughtModalOpen] = useState(false);
+  const [trackThoughts, setLocalTrackThoughts] = useState(getTrackReview(track.id));
 
   const handleHeart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,35 +31,42 @@ const TrackItem = ({ track }: { track: Track }) => {
     setLocalRating(r);
   };
 
-  const formatTime = (ms: number) => {
-    const mins = Math.floor(ms / 60000);
-    const secs = ((ms % 60000) / 1000).toFixed(0);
-    return `${mins}:${Number(secs) < 10 ? '0' : ''}${secs}`;
+  const handleSaveThoughts = (newThoughts: string) => {
+    setTrackReview(track.id, newThoughts);
+    setLocalTrackThoughts(newThoughts);
+    toast.success("Track perspective archived.", {
+      className: 'glass-toast-base glass-toast-success',
+      position: 'top-center'
+    });
+    setIsThoughtModalOpen(false);
   };
+
+  const heartActive = isHearted || isHovered;
 
   return (
     <div className="track-row group">
       <div className="track-number">{track.trackNumber}</div>
       <div className="track-info">
         <span className="track-name">{track.name}</span>
-        <span className="track-duration">{formatTime(track.durationMs)}</span>
+        <span className="track-duration">{Math.floor(track.durationMs / 60000)}:{( (track.durationMs % 60000) / 1000).toFixed(0).padStart(2, '0')}</span>
       </div>
       <div className="track-actions">
-        <div className="track-stars">
-          <StarRating rating={rating} onRate={handleRate} size="sm" />
+        <StarRating rating={rating} onRate={handleRate} size="sm" />
+        <div className="flex items-center gap-1.5 ml-2">
+          <button onClick={() => setIsThoughtModalOpen(true)} className={`heart-btn opacity-40 hover:opacity-100 transition-opacity ${trackThoughts ? 'text-white' : 'text-white/60'}`}>
+            <MessageSquareText size={16} strokeWidth={2.5} fill={trackThoughts ? "currentColor" : "none"} />
+          </button>
+          <button 
+            onClick={handleHeart}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`heart-btn transition-all duration-300 ${heartActive ? 'scale-110' : 'opacity-40 group-hover:opacity-100'} ${isPopping ? 'heart-pop-anim' : ''}`}
+          >
+            <Heart size={16} fill={heartActive ? "currentColor" : "none"} className={heartActive ? "text-red-500" : "text-white"} strokeWidth={2.5} />
+          </button>
         </div>
-        <button 
-          onClick={handleHeart}
-          className={`heart-btn ${isHearted ? 'is-active' : 'opacity-40 group-hover:opacity-100'} ${isPopping ? 'heart-pop-anim' : ''}`}
-        >
-          <Heart 
-            size={14} 
-            fill={isHearted ? "currentColor" : "rgba(255,255,255,0.05)"} 
-            className={isHearted ? "text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "text-white/60"} 
-            strokeWidth={2.5}
-          />
-        </button>
       </div>
+      <ThoughtModal isOpen={isThoughtModalOpen} title={track.name} initialThoughts={trackThoughts} artworkUrl={artworkUrl} onSave={handleSaveThoughts} onClose={() => setIsThoughtModalOpen(false)} />
     </div>
   );
 };
@@ -64,14 +74,10 @@ const TrackItem = ({ track }: { track: Track }) => {
 const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack }) => {
   const [albumRating, setAlbumRating] = useState(getRating(album.id));
   const [isHearted, setIsHearted] = useState(getHeartedIds().has(album.id));
+  const [isHovered, setIsHovered] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [review, setReview] = useState(getAlbumReview(album.id));
   const [isSaving, setIsSaving] = useState(false);
-
-  const handleAlbumRate = (r: number) => {
-    setRating(album.id, r);
-    setAlbumRating(r);
-  };
 
   const handleHeartClick = () => {
     setIsHearted(toggleHearted(album.id));
@@ -79,123 +85,50 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack }) => {
     setTimeout(() => setIsPopping(false), 450);
   };
 
-  const handleSaveReview = () => {
-    setIsSaving(true);
-    setAlbumReview(album.id, review);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success("Analysis Archived.", {
-        className: 'glass-toast-base glass-toast-success',
-        position: 'top-center'
-      });
-    }, 600);
-  };
+  const heartActive = isHearted || isHovered;
 
   return (
     <div className="album-detail-container custom-glass-scrollbar">
       <header className="detail-header">
-        <button onClick={onBack} className="detail-back-btn glass-button-base">
-          <ArrowLeft size={14} />
+        <button onClick={onBack} className="detail-back-btn glass-button-base group">
+          <ArrowLeft size={16} className="text-white/40 group-hover:text-white transition-colors" strokeWidth={2.5} />
           <span>Collection</span>
         </button>
       </header>
-
       <main className="detail-main">
         <div className="detail-hero">
           <div className="detail-artwork-wrapper">
             <img src={album.artworkUrl} alt={album.name} className="detail-artwork" />
           </div>
           <div className="detail-info">
-            <div className="detail-meta-top">
-              <span className="detail-year">{album.releaseYear}</span>
-              <span className="detail-genre">{album.genre}</span>
-            </div>
-            <div className="mb-2">
-              <h1 className="detail-title">
-                {album.name}
-                <button 
-                  onClick={handleHeartClick}
-                  className={`heart-btn inline-flex ml-3 align-middle ${isHearted ? 'is-active' : 'opacity-40'} ${isPopping ? 'heart-pop-anim' : ''}`}
-                >
-                  <Heart 
-                    size={28} 
-                    fill={isHearted ? "currentColor" : "rgba(255,255,255,0.05)"} 
-                    className={isHearted ? "text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]" : "text-white/80"} 
-                    strokeWidth={2.5}
-                  />
-                </button>
-              </h1>
-            </div>
+            <div className="detail-meta-top"><span className="detail-year">{album.releaseYear}</span><span className="detail-genre">{album.genre}</span></div>
+            <h1 className="detail-title">
+              {album.name}
+              <button 
+                onClick={handleHeartClick}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`heart-btn inline-flex ml-3 align-middle transition-all duration-300 ${heartActive ? 'scale-110' : 'opacity-40'} ${isPopping ? 'heart-pop-anim' : ''}`}
+              >
+                <Heart size={32} fill={heartActive ? "currentColor" : "none"} className={heartActive ? "text-red-500" : "text-white"} strokeWidth={2.5} />
+              </button>
+            </h1>
             <p className="detail-artist">{album.artist}</p>
-            
-            <div className="flex flex-wrap gap-8 items-start">
-                <div className="detail-rating-section">
-                  <p className="detail-rating-label">Album Rating</p>
-                  <StarRating rating={albumRating} onRate={handleAlbumRate} size="lg" />
-                </div>
-            </div>
-
+            <div className="detail-rating-section"><p className="detail-rating-label">Album Rating</p><StarRating rating={albumRating} onRate={(r) => { setRating(album.id, r); setAlbumRating(r); }} size="lg" /></div>
             <div className="detail-review-section mt-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="detail-rating-label !mb-0 flex items-center gap-2">
-                    <MessageSquareText size={10} />
-                    Album Thoughts
-                  </p>
-                  <div className="has-tooltip">
-                    <button 
-                      onClick={handleSaveReview}
-                      disabled={isSaving}
-                      className={`detail-save-review-btn ${isSaving ? 'opacity-40' : 'opacity-100 hover:text-blue-400'}`}
-                    >
-                      <Save size={12} className={isSaving ? 'animate-pulse' : ''} />
-                      <span>{isSaving ? 'Archiving...' : 'Save Notes'}</span>
-                    </button>
-                    <div className="tooltip !text-[8px] !max-w-[200px] !tracking-normal">
-                      Notes are safely stored in your browser's local storage for your next visit.
-                    </div>
-                  </div>
-                </div>
-                <div className="review-textarea-wrapper liquid-glass">
-                  <textarea 
-                    value={review}
-                    onChange={(e) => setReview(e.target.value)}
-                    placeholder="I really enjoyed... I thought this album was..."
-                    className="detail-review-textarea custom-glass-scrollbar"
-                  />
-                </div>
-            </div>
-
-            {album.description && (
-              <div className="detail-description-wrapper custom-glass-scrollbar mt-8">
-                <p className="detail-rating-label">Editorial Perspective</p>
-                <p className="detail-description">{album.description}</p>
+              <div className="flex items-center justify-between mb-3"><p className="detail-rating-label !mb-0 flex items-center gap-2"><MessageSquareText size={12} className="text-white/40" strokeWidth={2.5} />Album Thoughts</p>
+                <button onClick={() => { setIsSaving(true); setAlbumReview(album.id, review); setTimeout(() => { setIsSaving(false); toast.success("Analysis Archived."); }, 600); }} disabled={isSaving} className={`detail-save-review-btn ${isSaving ? 'opacity-40' : 'opacity-100 hover:text-white'}`}>
+                  <Save size={14} className="text-white/40" strokeWidth={2.5} /><span>{isSaving ? 'Archiving...' : 'Save Notes'}</span>
+                </button>
               </div>
-            )}
+              <div className="review-textarea-wrapper liquid-glass"><textarea value={review} onChange={(e) => setReview(e.target.value)} placeholder="Type your thoughts..." className="detail-review-textarea custom-glass-scrollbar" /></div>
+            </div>
+            {album.description && (<div className="detail-description-wrapper custom-glass-scrollbar mt-8"><p className="detail-rating-label">Editorial Perspective</p><p className="detail-description">{album.description}</p></div>)}
           </div>
         </div>
-
         <div className="tracklist-section">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="tracklist-title">
-              <Music size={14} />
-              Tracklist
-            </h3>
-          </div>
-          <div className="tracklist-container">
-            {album.tracks ? album.tracks.map(track => (
-              <TrackItem key={track.id} track={track} />
-            )) : (
-              <div className="tracklist-empty">
-                <p>No tracklist metadata available.</p>
-                <button 
-                  onClick={() => window.open(album.appleMusicUrl, '_blank')}
-                  className="mt-4 glass-button-base px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest"
-                >
-                  View on Apple Music
-                </button>
-              </div>
-            )}
-          </div>
+          <div className="flex items-center justify-between mb-4"><h3 className="tracklist-title"><Music size={16} className="text-white/40" strokeWidth={2.5} />Tracklist</h3></div>
+          <div className="tracklist-container">{album.tracks?.map(track => (<TrackItem key={track.id} track={track} artworkUrl={album.artworkUrl} />)) || <div className="tracklist-empty"><p>No tracklist metadata available.</p></div>}</div>
         </div>
       </main>
     </div>

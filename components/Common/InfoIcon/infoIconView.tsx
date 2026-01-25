@@ -5,7 +5,7 @@ const InfoIconView: React.FC<InfoIconProps> = ({ text, className = "" }) => {
   return (
     <span className={`has-tooltip info-icon-container ${className}`}>
       <svg 
-        className="info-icon-svg" 
+        className="info-icon-svg text-white/30 hover:text-white/80 transition-colors" 
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="currentColor" 

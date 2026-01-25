@@ -1,4 +1,3 @@
-
 .home-view-container {
   display: flex;
   align-items: center;
@@ -18,7 +17,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3.5rem;
+  gap: 1.5rem; /* Reduced gap between shuffle and pills */
 }
 
 .home-header {
@@ -31,18 +30,18 @@
   text-transform: uppercase;
   letter-spacing: 0.4em;
   color: #60a5fa;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   opacity: 0.8;
 }
 
 .home-title {
-  font-size: clamp(3.5rem, 12vw, 6rem);
+  font-size: clamp(3rem, 10vw, 5rem);
   font-weight: 900;
   font-style: italic;
   text-transform: uppercase;
   letter-spacing: -0.06em;
   line-height: 0.85;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .shimmer-text {
@@ -63,7 +62,7 @@
 }
 
 .home-subtitle {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -80,32 +79,32 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem 3rem;
+  gap: 0.75rem;
+  padding: 1.1rem 2.2rem; /* Reduced padding for smaller hero button */
   border-radius: 9999px;
   color: white;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: 11px; /* Slightly smaller text */
   font-weight: 900;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.25em;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   overflow: hidden;
 }
 
 .home-hero-btn:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.08);
   border-color: #60a5fa;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 }
 
 .btn-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(96, 165, 250, 0.15), transparent);
+  background: radial-gradient(circle at center, rgba(96, 165, 250, 0.12), transparent);
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -116,14 +115,15 @@
 
 .home-actions-secondary {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .home-pill-btn {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0 1.5rem;
+  height: 54px; /* Slightly taller secondary buttons */
   border-radius: 9999px;
   color: white;
   text-transform: uppercase;
@@ -138,15 +138,16 @@
 .home-pill-btn:hover {
   opacity: 1;
   transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .home-footer {
-  margin-top: 2rem;
+  margin-top: 1rem;
   opacity: 0.2;
 }
 
 .home-version {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.2em;

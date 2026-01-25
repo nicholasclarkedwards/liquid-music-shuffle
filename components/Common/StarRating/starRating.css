@@ -15,21 +15,21 @@
   }
   25% { 
     transform: scale(1.6); 
-    color: #facc15; 
-    filter: brightness(1.5) drop-shadow(0 0 15px rgba(250, 204, 21, 0.8)); 
+    color: #ffffff; 
+    filter: brightness(1.2) drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); 
   }
   50% { 
     transform: scale(0.85); 
-    color: #facc15;
+    color: #ffffff;
   }
   75% { 
     transform: scale(1.1); 
-    color: #facc15;
+    color: #ffffff;
   }
   100% { 
     transform: scale(1); 
-    color: #facc15;
-    filter: brightness(1.1) drop-shadow(0 0 8px rgba(250, 204, 21, 0.6));
+    color: #ffffff;
+    filter: brightness(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
   }
 }
 

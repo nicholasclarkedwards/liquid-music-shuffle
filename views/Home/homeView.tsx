@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Shuffle, Library, Compass } from 'lucide-react';
 import './homeView.css';
@@ -24,7 +23,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onEnterExplorer, onEnterLibrary }) 
             className="home-hero-btn glass-button-base group"
           >
             <div className="btn-glow"></div>
-            <Shuffle size={24} className="group-hover:rotate-180 transition-transform duration-700" />
+            <Shuffle size={20} className="text-white/40 group-hover:text-white group-hover:rotate-180 transition-all duration-700" strokeWidth={2.5} />
             <span>Shuffle Library</span>
           </button>
         </div>
@@ -32,17 +31,17 @@ const HomeView: React.FC<HomeViewProps> = ({ onEnterExplorer, onEnterLibrary }) 
         <div className="home-actions-secondary">
           <button 
             onClick={onEnterLibrary} 
-            className="home-pill-btn glass-button-base"
+            className="home-pill-btn glass-button-base group"
           >
-            <Library size={14} className="text-indigo-400" />
+            <Library size={14} className="text-white/40 group-hover:text-white transition-colors" strokeWidth={2.5} />
             <span>Collection</span>
           </button>
           
           <button 
             onClick={onEnterExplorer} 
-            className="home-pill-btn glass-button-base"
+            className="home-pill-btn glass-button-base group"
           >
-            <Compass size={14} className="text-blue-400" />
+            <Compass size={14} className="text-white/40 group-hover:text-white transition-colors" strokeWidth={2.5} />
             <span>Discover New</span>
           </button>
         </div>

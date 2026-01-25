@@ -8,14 +8,18 @@ import { LibraryView } from './views/Library';
 import { AlbumDetailView } from './views/AlbumDetails';
 import { syncFullLibrary } from './services/musicService';
 import { Toaster, toast } from 'react-hot-toast';
-import { Info, Shuffle, ArrowLeft } from 'lucide-react';
+import { Info, Shuffle, ArrowLeft, Search, AlertCircle } from 'lucide-react';
 
 const IconMessage = () => (
-  <Info size={20} className="text-blue-500" strokeWidth={3} />
+  <Info size={20} className="text-white/40" strokeWidth={2.5} />
 );
 
 const IconShuffleAnimated = () => (
-  <Shuffle size={18} className="icon-shuffle-animated text-white" />
+  <Shuffle size={18} className="icon-shuffle-animated text-white/40" strokeWidth={2.5} />
+);
+
+const IconDiscoverAnimated = () => (
+  <Search size={18} className="icon-discover-animated text-white/40" strokeWidth={2.5} />
 );
 
 const App: React.FC = () => {
@@ -33,7 +37,7 @@ const App: React.FC = () => {
   });
 
   const [persistentBg, setPersistentBg] = useState<string | undefined>(undefined);
-  const { fetchRandomAlbum, currentAlbum, isLoading, refreshCurrent } = useAlbumDiscovery(filters);
+  const { fetchRandomAlbum, currentAlbum, isLoading, refreshCurrent, error } = useAlbumDiscovery(filters);
 
   useEffect(() => {
     const boot = async () => {
@@ -58,25 +62,43 @@ const App: React.FC = () => {
   }, [currentAlbum, isLoading]);
 
   const handleShuffleAction = async (mode: DiscoveryMode) => {
-    const toastId = toast("Shuffling...", { 
-      icon: <IconShuffleAnimated />,
+    const isDiscovery = mode === DiscoveryMode.TASTE;
+    const toastId = toast(isDiscovery ? "AI is selecting a project..." : "Shuffling library pool...", { 
+      icon: isDiscovery ? <IconDiscoverAnimated /> : <IconShuffleAnimated />,
       className: 'glass-toast-base glass-toast-info',
       position: 'top-center',
-      duration: 10000 
+      duration: 15000 
     });
 
-    await fetchRandomAlbum(mode);
-    toast.dismiss(toastId);
+    try {
+      await fetchRandomAlbum(mode);
+      toast.dismiss(toastId);
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      toast.error(err.message || "Discovery error", {
+        icon: <AlertCircle size={18} className="text-white" />,
+        className: 'glass-toast-base glass-toast-error',
+        position: 'top-center'
+      });
+    }
   };
 
   const handleRefreshMetadata = async () => {
-    const toastId = toast("Updating Metadata...", { 
+    const toastId = toast("Syncing with store...", { 
         className: 'glass-toast-base glass-toast-info',
         position: 'top-center',
         duration: 5000 
       });
-    await refreshCurrent();
-    toast.dismiss(toastId);
+    try {
+      await refreshCurrent();
+      toast.dismiss(toastId);
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      toast.error("Sync failed", {
+        className: 'glass-toast-base glass-toast-error',
+        position: 'top-center'
+      });
+    }
   };
 
   const handleLaunchAlbum = () => {
@@ -119,7 +141,7 @@ const App: React.FC = () => {
               className="fixed top-6 left-6 md:top-8 md:left-8 z-[100] glass-button-base px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5 md:gap-2 active:scale-95 transition-transform"
               style={{ top: 'calc(env(safe-area-inset-top, 24px) + 8px)' }}
             >
-              <ArrowLeft size={12} />
+              <ArrowLeft size={12} className="text-white/40 hover:text-white" strokeWidth={2.5} />
               <span className="hidden xs:inline">Back Home</span>
               <span className="xs:hidden">Back</span>
             </button>

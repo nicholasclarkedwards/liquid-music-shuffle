@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Album } from '../../types';
 import { getRawAlbumsPool, getHeartedIds } from '../../services/musicService';
@@ -21,15 +20,11 @@ const LibraryView: React.FC<LibraryViewProps> = ({ onBack, onSelectAlbum }) => {
     const heartedIds = getHeartedIds();
     const cache = loadPersistentCache();
     
-    // Create a combined list of original JSON items + cached hearted discoveries
     const combinedPool = [...jsonPool];
-    
-    // Add hearted discoveries that aren't in the JSON
     const jsonIds = new Set(jsonPool.map(item => item["Catalog Identifiers - Album"]?.split(',')[0].trim()).filter(Boolean));
     
     heartedIds.forEach(id => {
       if (!jsonIds.has(id) && cache[id]) {
-        // Map cached album to library entry format
         combinedPool.push({
           "Album ID": id,
           Title: cache[id].name,
@@ -44,20 +39,22 @@ const LibraryView: React.FC<LibraryViewProps> = ({ onBack, onSelectAlbum }) => {
   }, []);
 
   const filteredPool = useMemo(() => {
-    if (!search.trim()) return fullPool;
-    const query = search.toLowerCase();
-    return fullPool.filter(entry => 
-      (entry.Title && entry.Title.toLowerCase().includes(query)) ||
-      (entry.Artist && entry.Artist.toLowerCase().includes(query))
-    );
+    const query = search.trim().toLowerCase();
+    if (!query) return fullPool;
+    
+    return fullPool.filter(entry => {
+      const title = (entry.Title || entry.name || "").toLowerCase();
+      const artist = (entry.Artist || entry.artist || "").toLowerCase();
+      return title.includes(query) || artist.includes(query);
+    });
   }, [fullPool, search]);
 
   return (
     <div className="library-view-container">
       <header className="library-header">
         <div className="library-header-top">
-          <button onClick={onBack} className="library-back-btn glass-button-base">
-            <ArrowLeft size={12} />
+          <button onClick={onBack} className="library-back-btn glass-button-base group">
+            <ArrowLeft size={12} className="text-white/40 group-hover:text-white" strokeWidth={2.5} />
             <span>Home</span>
           </button>
           <div className="library-header-text">
@@ -70,7 +67,7 @@ const LibraryView: React.FC<LibraryViewProps> = ({ onBack, onSelectAlbum }) => {
           <div className="library-search-wrapper glass-input-container">
              <input 
                type="text" 
-               placeholder="Search..." 
+               placeholder="Search title or artist..." 
                value={search}
                onChange={(e) => setSearch(e.target.value)}
                className="text-left"
@@ -83,14 +80,14 @@ const LibraryView: React.FC<LibraryViewProps> = ({ onBack, onSelectAlbum }) => {
               className={`toggle-btn ${layout === 'grid' ? 'is-active' : ''}`}
               title="Grid View"
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={16} className={layout === 'grid' ? "text-white" : "text-white/30"} strokeWidth={2.5} />
             </button>
             <button 
               onClick={() => setLayout('list')}
               className={`toggle-btn ${layout === 'list' ? 'is-active' : ''}`}
               title="List View"
             >
-              <List size={16} />
+              <List size={16} className={layout === 'list' ? "text-white" : "text-white/30"} strokeWidth={2.5} />
             </button>
             <div className={`toggle-slider is-${layout}`}></div>
           </div>
@@ -102,7 +99,7 @@ const LibraryView: React.FC<LibraryViewProps> = ({ onBack, onSelectAlbum }) => {
           <div className={`library-items-container view-${layout}`}>
             {filteredPool.map((entry, idx) => (
               <LibraryItem 
-                key={`${idx}-${entry.Title || entry["Album ID"] || Math.random()}`} 
+                key={`${entry["Catalog Identifiers - Album"] || entry.Title}-${idx}`} 
                 entry={entry} 
                 layout={layout}
                 onClick={onSelectAlbum ? (album) => onSelectAlbum(album) : undefined}

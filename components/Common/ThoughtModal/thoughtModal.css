@@ -1,0 +1,262 @@
+.thought-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* Extremely high z-index to stay above everything */
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: modalBackdropFade 0.3s ease-out;
+  pointer-events: auto; /* Capture all clicks */
+  touch-action: none; /* Prevent touch interaction bypass */
+}
+
+.thought-modal-container {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85dvh;
+  animation: modalSlideUp 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  display: flex;
+  position: relative;
+  z-index: 10001;
+}
+
+.thought-modal-card {
+  padding: 0 !important;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.9) !important;
+}
+
+.thought-modal-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 360px;
+}
+
+.thought-modal-header {
+  padding: 1.5rem 1.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.thought-modal-icon-hex {
+  width: 36px;
+  height: 36px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.thought-modal-title {
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: white;
+}
+
+.thought-modal-close-btn {
+  opacity: 0.3;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: white;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thought-modal-close-btn:hover {
+  opacity: 1;
+  color: #f87171;
+  transform: rotate(90deg);
+}
+
+.thought-modal-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.thought-modal-textarea {
+  width: 100%;
+  flex: 1;
+  min-height: 180px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: none;
+  padding: 0;
+  font-weight: 500;
+}
+
+.thought-modal-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+  font-style: italic;
+}
+
+.thought-modal-display-block {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.thought-modal-display-block:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.perspective-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
+}
+
+.empty-prompt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.edit-hint-overlay {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+}
+
+.thought-modal-display-block:hover .edit-hint-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hint-pill {
+  background: rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #93c5fd;
+}
+
+.thought-modal-actions {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.action-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border: none;
+}
+
+.primary-btn {
+  background: #3b82f6;
+  color: white;
+  flex: 2;
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+.primary-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.5);
+  flex: 1;
+}
+
+.outline-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.outline-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.action-btn:active {
+  transform: scale(0.96);
+}
+
+@keyframes modalBackdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

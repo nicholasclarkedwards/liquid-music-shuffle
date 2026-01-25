@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
-import { fetchMetadataBySearch, fetchMetadataById, mapItunesToAlbum } from "./itunesService";
+import { fetchMetadataBySearch, fetchMetadataById } from "./itunesService";
 import { loadPersistentCache, saveToPersistentCache } from "./cacheService";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -9,6 +9,7 @@ const HEARTED_STORAGE_KEY = "liquid_shuffle_hearted_v1";
 const TRACK_HEARTED_STORAGE_KEY = "liquid_shuffle_track_hearted_v1";
 const RATINGS_STORAGE_KEY = "liquid_shuffle_ratings_v1";
 const REVIEWS_STORAGE_KEY = "liquid_shuffle_reviews_v1";
+const TRACK_REVIEWS_STORAGE_KEY = "liquid_shuffle_track_reviews_v1";
 
 let cachedArtists: any[] | null = null;
 let rawAlbumsPool: any[] = [];
@@ -93,6 +94,27 @@ export const setAlbumReview = (id: string, review: string) => {
   } catch {}
 };
 
+export const getTrackReview = (trackId: string): string => {
+  try {
+    const data = localStorage.getItem(TRACK_REVIEWS_STORAGE_KEY);
+    const reviews = data ? JSON.parse(data) : {};
+    return reviews[trackId] || "";
+  } catch { return ""; }
+};
+
+export const setTrackReview = (trackId: string, review: string) => {
+  try {
+    const data = localStorage.getItem(TRACK_REVIEWS_STORAGE_KEY);
+    const reviews = data ? JSON.parse(data) : {};
+    if (!review.trim()) {
+      delete reviews[trackId];
+    } else {
+      reviews[trackId] = review;
+    }
+    localStorage.setItem(TRACK_REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+  } catch {}
+};
+
 // --- Library Logic ---
 
 export const getRawAlbumsPool = () => rawAlbumsPool;
@@ -112,11 +134,24 @@ export const syncFullLibrary = async (onProgress?: (current: number, total: numb
     const [artistsData, albumsData] = await Promise.all([artistsRes.json(), albumsRes.json()]);
     cachedArtists = (artistsData || []);
     memoryCache = loadPersistentCache();
-    const isVisibleItem = (item: any) => item.Visible === true || item.Visible === "true";
-    rawAlbumsPool = (albumsData || []).filter((item: any) => isVisibleItem(item) && (item.Title || item["Catalog Identifiers - Album"]));
+    
+    // Prioritize visible items OR items that were hearted/rated in previous sessions
+    const hearted = getHeartedIds();
+    const ratingsRaw = localStorage.getItem(RATINGS_STORAGE_KEY);
+    const ratedIds = new Set(ratingsRaw ? Object.keys(JSON.parse(ratingsRaw)) : []);
+
+    rawAlbumsPool = (albumsData || []).filter((item: any) => {
+      const id = item["Catalog Identifiers - Album"] ? String(item["Catalog Identifiers - Album"]).split(',')[0].trim() : null;
+      const isVisible = item.Visible === true || item.Visible === "true";
+      const isSaved = id && (hearted.has(id) || ratedIds.has(id));
+      const hasIdentity = item.Title || item["Catalog Identifiers - Album"];
+      return (isVisible || isSaved) && hasIdentity;
+    });
+    
     isLibraryReady = true;
     if (onProgress) onProgress(rawAlbumsPool.length, rawAlbumsPool.length);
   } catch (err) {
+    console.error("[MusicService] Boot error:", err);
     throw new Error("Failed to initialize data pool.");
   }
 };
@@ -131,8 +166,10 @@ export const getArtistSuggestions = async (query: string): Promise<string[]> => 
 
 export const hydrateAlbum = async (entry: any, filters?: Filters): Promise<Album> => {
   const catalogId = entry["Catalog Identifiers - Album"];
-  const originalTitle = entry.Title || "Unknown Title";
-  const safeId = catalogId ? String(catalogId).split(',')[0].trim() : normalizeString(originalTitle);
+  const originalTitle = entry.Title || entry.name || "Unknown Title";
+  const artistHint = entry.Artist || entry.artist || filters?.artist;
+  const safeId = catalogId ? String(catalogId).split(',')[0].trim() : normalizeString(originalTitle + (artistHint || ""));
+  
   const cached = memoryCache[safeId];
   if (cached && (cached.tracks || !catalogId)) return cached;
 
@@ -141,10 +178,10 @@ export const hydrateAlbum = async (entry: any, filters?: Filters): Promise<Album
     try {
       album = await fetchMetadataById(String(catalogId));
     } catch {
-      album = await fetchMetadataBySearch(originalTitle, filters?.artist);
+      album = await fetchMetadataBySearch(originalTitle, artistHint);
     }
   } else {
-    album = await fetchMetadataBySearch(originalTitle, filters?.artist);
+    album = await fetchMetadataBySearch(originalTitle, artistHint);
   }
 
   album.originalName = originalTitle;
@@ -156,21 +193,28 @@ export const hydrateAlbum = async (entry: any, filters?: Filters): Promise<Album
 export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> => {
   if (!isLibraryReady) throw new Error("Library is still booting...");
   let pool = [...rawAlbumsPool];
+  
   if (filters.artist && filters.artist.trim() !== "") {
     const nFilter = normalizeString(filters.artist);
-    pool = pool.filter(entry => normalizeString(entry.Title).includes(nFilter));
+    pool = pool.filter(entry => normalizeString(entry.Artist || entry.Title).includes(nFilter));
     if (pool.length === 0) pool = [...rawAlbumsPool];
   }
+  
   let freshPool = pool.filter(entry => {
-    const id = entry["Catalog Identifiers - Album"] ? String(entry["Catalog Identifiers - Album"]).split(',')[0].trim() : null;
-    const title = normalizeString(entry.Title);
-    return !sessionSeenIds.has(id || "") && !sessionSeenTitles.has(title);
+    const id = entry["Catalog Identifiers - Album"] ? String(entry["Catalog Identifiers - Album"]).split(',')[0].trim() : normalizeString(entry.Title);
+    return !sessionSeenIds.has(id || "") && !sessionSeenTitles.has(normalizeString(entry.Title));
   });
+
   if (freshPool.length === 0 && pool.length > 0) {
     resetSessionHistory();
-    freshPool = [...pool];
+    freshPool = pool.filter(entry => {
+        const id = entry["Catalog Identifiers - Album"] ? String(entry["Catalog Identifiers - Album"]).split(',')[0].trim() : normalizeString(entry.Title);
+        return !sessionSeenIds.has(id || "");
+    });
   }
-  if (freshPool.length === 0) throw new Error("No albums match your filters.");
+
+  if (freshPool.length === 0) throw new Error("No albums match your current pool.");
+  
   let attempts = 0;
   while (attempts < 15) {
     attempts++;
@@ -181,41 +225,74 @@ export const getRandomLibraryAlbum = async (filters: Filters): Promise<Album> =>
       sessionSeenIds.add(album.id);
       sessionSeenTitles.add(normalizeString(album.originalName));
       return album;
-    } catch (e) { freshPool.splice(randomIndex, 1); }
+    } catch (e) { 
+      console.warn("[MusicService] Hydration failed for", entry.Title, e);
+      freshPool.splice(randomIndex, 1); 
+    }
     if (freshPool.length === 0) break;
   }
-  throw new Error("Could not find a fresh match.");
+  throw new Error("Could not find a valid fresh match.");
 };
 
 export const discoverAlbumViaAI = async (filters: Filters, mode: DiscoveryMode): Promise<Album> => {
-  const contextPool = rawAlbumsPool.slice(0, 15).map(a => a.Title).join(", ");
-  const exclusions = Array.from(sessionSeenTitles).slice(-8).join(", ");
-  const seed = Math.random().toString(36).substring(7);
-  const prompt = `Recommend ONE real music album. EXCLUDE: [${exclusions}]. Return ONLY JSON: {"albumName": "string", "artistName": "string"}`;
+  const hearted = getHeartedIds();
+  const cache = loadPersistentCache();
+  const likedContext = Array.from(hearted)
+    .slice(0, 10)
+    .map(id => cache[id] ? `${cache[id].name} by ${cache[id].artist}` : null)
+    .filter(Boolean)
+    .join(", ");
+  
+  const exclusions = Array.from(sessionSeenTitles).slice(-15).join(", ");
+  const genreConstraint = filters.genre ? `Genre: ${filters.genre}.` : '';
+  const decadeConstraint = filters.decade ? `Decade: ${filters.decade}.` : '';
+  const tasteConstraint = likedContext ? `My taste includes: [${likedContext}].` : '';
+  
+  const prompt = `Recommend ONE real, highly-rated music album. 
+    ${genreConstraint} 
+    ${decadeConstraint} 
+    ${tasteConstraint} 
+    Strictly avoid these albums: [${exclusions}]. 
+    Return ONLY a JSON object with keys "albumName" and "artistName".`;
+  
   try {
-    const response = await ai.models.generateContent({
+    const result = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: { 
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
-          properties: { albumName: { type: Type.STRING }, artistName: { type: Type.STRING } },
+          properties: { 
+            albumName: { type: Type.STRING, description: "The title of the album" }, 
+            artistName: { type: Type.STRING, description: "The primary artist of the album" } 
+          },
           required: ["albumName", "artistName"]
         }
       },
     });
-    const rec = JSON.parse(response.text.trim());
+
+    if (!result.text) throw new Error("AI returned empty response");
+    
+    // Clean potential markdown fluff just in case
+    const cleanText = result.text.replace(/```json/g, "").replace(/```/g, "").trim();
+    const rec = JSON.parse(cleanText);
+    
+    console.log("[AI Discovery] Suggested:", rec.albumName, "by", rec.artistName);
+    
     const album = await fetchMetadataBySearch(rec.albumName, rec.artistName);
     sessionSeenIds.add(album.id);
     sessionSeenTitles.add(normalizeString(rec.albumName));
     return album;
-  } catch (err: any) { throw new Error("Discovery error."); }
+  } catch (err: any) {
+    console.error("[AI Discovery Error]", err);
+    throw new Error(err.message?.includes("Catalog miss") ? `AI suggested "${err.message.split('"')[1]}", but it's not in the store.` : "Discovery failed. Try again.");
+  }
 };
 
 export const refreshAlbumMetadata = async (currentAlbum: Album, filters: Filters): Promise<Album> => {
   const sourceName = currentAlbum.originalName || currentAlbum.name;
-  const refreshed = await fetchMetadataBySearch(sourceName, filters.artist);
+  const refreshed = await fetchMetadataBySearch(sourceName, currentAlbum.artist);
   refreshed.originalName = sourceName;
   saveToPersistentCache(refreshed);
   return refreshed;

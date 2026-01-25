@@ -1,100 +1,3 @@
-
-/* Liquid Shuffle Artwork Styles */
-
-.artwork-meta-refresh-btn {
-  width: 2.75rem; /* Increased to 44px for iOS tap target standards */
-  height: 2.75rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px); /* Essential for iOS Safari */
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  cursor: pointer;
-  flex-shrink: 0;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.refresh-icon {
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  will-change: transform; /* Hint for Safari GPU acceleration */
-}
-
-.artwork-meta-refresh-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.3);
-}
-
-.artwork-meta-refresh-btn:hover .refresh-icon {
-  transform: rotate(90deg);
-}
-
-.artwork-meta-refresh-btn:active .refresh-icon {
-  transform: scale(0.8) rotate(180deg);
-}
-
-.artwork-meta-refresh-btn.is-loading {
-  background: rgba(59, 130, 246, 0.1);
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.5);
-}
-
-.artwork-card-base {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 420px;
-}
-
-.artwork-loading-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-
-.artwork-loading-text {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 9px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-}
-
-.artwork-empty-wrapper {
-  color: rgba(255, 255, 255, 0.1);
-  text-align: center;
-  padding-left: 2.5rem;
-  padding-right: 2.5rem;
-}
-
-.artwork-empty-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 1.5rem;
-  opacity: 0.05;
-}
-
-.artwork-empty-text {
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: 8px;
-  line-height: 2;
-  opacity: 0.3;
-  font-style: italic;
-}
-
 .artwork-card-active {
   display: flex;
   flex-direction: column;
@@ -102,8 +5,9 @@
   justify-content: center;
   position: relative;
   overflow: visible !important;
-  min-height: 460px;
-  transform: translate3d(0,0,0); /* Force Layer creation for Safari */
+  min-height: 480px;
+  padding: 2rem 1.5rem !important; /* Unified Padding */
+  transform: translate3d(0,0,0);
 }
 
 .artwork-main-layout {
@@ -116,36 +20,11 @@
 }
 
 .artwork-image-container {
-  width: 310px;
-  height: 310px;
-  margin-bottom: 2rem;
+  width: 320px; /* Bigger Artwork */
+  height: 320px;
+  margin-bottom: 1.5rem;
   position: relative;
   will-change: transform;
-}
-
-.artwork-image-glow {
-  position: absolute;
-  top: -0.5rem;
-  right: -0.5rem;
-  bottom: -0.5rem;
-  left: -0.5rem;
-  background-color: rgba(0, 0, 0, 0.3);
-  filter: blur(24px);
-  border-radius: 2.5rem;
-  z-index: -10;
-  opacity: 0.7;
-}
-
-.artwork-image-shadow {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  background-color: rgba(0, 0, 0, 0.5);
-  filter: blur(48px);
-  border-radius: 2rem;
-  z-index: -10;
 }
 
 .artwork-image-inner-wrapper {
@@ -153,158 +32,65 @@
   height: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;
+  border-radius: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform: translate3d(0,0,0);
 }
 
 .artwork-image-container:hover .artwork-image-inner-wrapper {
-  transform: scale(1.03) translate3d(0,0,0);
+  transform: scale(1.02);
   border-color: rgba(255, 255, 255, 0.2);
-}
-
-.artwork-image-element {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: all 400ms ease;
-}
-
-.artwork-image-container:hover .artwork-image-element {
-  filter: brightness(0.25) blur(1px);
-  transform: scale(1.05);
-}
-
-.artwork-play-button-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 500ms ease;
-  transform: translateY(1.5rem);
-}
-
-.artwork-image-container:hover .artwork-play-button-overlay {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.artwork-play-button {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: all 300ms ease;
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.artwork-play-button:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: scale(1.1);
-}
-
-.artwork-play-button:active {
-  transform: scale(0.9);
-}
-
-.artwork-play-svg {
-  width: 2rem;
-  height: 2rem;
-  margin-left: 0.25rem;
 }
 
 .artwork-meta-layout {
   text-align: center;
   width: 100%;
-  max-width: 24rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  max-width: 320px;
 }
 
 .artwork-title {
   font-size: 1.25rem;
   font-weight: 900;
-  margin-bottom: 0.375rem;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
+  margin-bottom: 0.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   font-style: italic;
   color: white;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  filter: drop-shadow(0 20px 13px rgba(0, 0, 0, 0.03)) drop-shadow(0 8px 5px rgba(0, 0, 0, 0.08));
-}
-
-@media (min-width: 768px) {
-  .artwork-title {
-    font-size: 1.5rem;
-  }
 }
 
 .artwork-artist {
-  color: rgba(96, 165, 250, 0.9);
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 900;
-  margin-bottom: 1.5rem;
-  letter-spacing: 0.25em;
+  margin-bottom: 1.75rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  font-size: 10px;
-  filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.04)) drop-shadow(0 4px 3px rgba(0, 0, 0, 0.1));
+  font-size: 12px;
 }
 
 .artwork-badge-container {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 0.5rem 1.5rem;
+  gap: 0.5rem;
+  padding: 0.45rem 1.1rem;
   border-radius: 9999px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  filter: saturate(180%);
 }
 
 .artwork-badge-text {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.15em;
 }
 
 .artwork-badge-dot {
-  width: 2px;
-  height: 2px;
+  width: 3px;
+  height: 3px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .5; }
-}
-
-@keyframes album-plunge {
-  0% { transform: scale(2.5) translateY(-100dvh); opacity: 0; filter: blur(40px); }
-  30% { opacity: 1; }
-  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
-}
-.animate-album-plunge {
-  animation: album-plunge 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
