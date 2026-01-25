@@ -1,61 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Album, Track } from '../../types';
-import { ArrowLeft, Heart, Star, Music } from 'lucide-react';
-import { getTrackHeartedIds, toggleTrackHearted, getRating, setRating, getHeartedIds, toggleHearted } from '../../services/musicService';
-import { GlassCard } from '../../components/Common';
+import { ArrowLeft, Heart, Music, MessageSquareText, Save } from 'lucide-react';
+import { getTrackHeartedIds, toggleTrackHearted, getRating, setRating, getHeartedIds, toggleHearted, getAlbumReview, setAlbumReview } from '../../services/musicService';
+import { GlassCard, StarRating } from '../../components/Common';
+import { toast } from 'react-hot-toast';
 import './albumDetailView.css';
 
 interface AlbumDetailViewProps {
   album: Album;
   onBack: () => void;
 }
-
-const StarRating = ({ rating, onRate }: { rating: number, onRate: (r: number) => void }) => {
-  const [hover, setHover] = useState(0);
-  const [animatingRating, setAnimatingRating] = useState(0);
-  const [isBusy, setIsBusy] = useState(false);
-
-  const handleClick = (s: number) => {
-    onRate(s);
-    setAnimatingRating(s);
-    setIsBusy(true);
-    setTimeout(() => {
-      setIsBusy(false);
-      setAnimatingRating(0);
-    }, 1200);
-  };
-
-  return (
-    <div className="flex gap-1.5">
-      {[1, 2, 3, 4, 5].map((s) => {
-        // Show persistent yellow only when not busy animating
-        const isActive = !isBusy && (s <= rating || s <= hover);
-        const isAnimating = isBusy && s <= animatingRating;
-        
-        return (
-          <button
-            key={s}
-            onClick={() => handleClick(s)}
-            onMouseEnter={() => setHover(s)}
-            onMouseLeave={() => setHover(0)}
-            className={`star-btn transform active:scale-150 ${isActive ? 'text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.7)]' : 'text-white/30'} ${isAnimating ? 'star-sequence-anim' : ''}`}
-            style={{ 
-              animationDelay: isAnimating ? `${s * 70}ms` : '0ms'
-            }}
-          >
-            <Star 
-              size={18} 
-              fill={isActive || isAnimating ? "currentColor" : "rgba(255,255,255,0.05)"} 
-              strokeWidth={2.5} 
-              className="will-change-transform"
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-};
 
 const TrackItem = ({ track }: { track: Track }) => {
   const [isHearted, setIsHearted] = useState(getTrackHeartedIds().has(track.id));
@@ -89,11 +43,7 @@ const TrackItem = ({ track }: { track: Track }) => {
       </div>
       <div className="track-actions">
         <div className="track-stars">
-          {[1,2,3,4,5].map(s => (
-            <button key={s} onClick={() => handleRate(s)} className={`star-btn p-0.5 transition-all active:scale-150 ${s <= rating ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.4)]' : 'text-white/20'}`}>
-              <Star size={10} fill={s <= rating ? "currentColor" : "rgba(255,255,255,0.05)"} strokeWidth={2.5} />
-            </button>
-          ))}
+          <StarRating rating={rating} onRate={handleRate} size="sm" />
         </div>
         <button 
           onClick={handleHeart}
@@ -115,6 +65,8 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack }) => {
   const [albumRating, setAlbumRating] = useState(getRating(album.id));
   const [isHearted, setIsHearted] = useState(getHeartedIds().has(album.id));
   const [isPopping, setIsPopping] = useState(false);
+  const [review, setReview] = useState(getAlbumReview(album.id));
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAlbumRate = (r: number) => {
     setRating(album.id, r);
@@ -125,6 +77,18 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack }) => {
     setIsHearted(toggleHearted(album.id));
     setIsPopping(true);
     setTimeout(() => setIsPopping(false), 450);
+  };
+
+  const handleSaveReview = () => {
+    setIsSaving(true);
+    setAlbumReview(album.id, review);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("Analysis Archived.", {
+        className: 'glass-toast-base glass-toast-success',
+        position: 'top-center'
+      });
+    }, 600);
   };
 
   return (
@@ -164,13 +128,46 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack }) => {
             </div>
             <p className="detail-artist">{album.artist}</p>
             
-            <div className="detail-rating-section">
-              <p className="detail-rating-label">Album Rating</p>
-              <StarRating rating={albumRating} onRate={handleAlbumRate} />
+            <div className="flex flex-wrap gap-8 items-start">
+                <div className="detail-rating-section">
+                  <p className="detail-rating-label">Album Rating</p>
+                  <StarRating rating={albumRating} onRate={handleAlbumRate} size="lg" />
+                </div>
+            </div>
+
+            <div className="detail-review-section mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="detail-rating-label !mb-0 flex items-center gap-2">
+                    <MessageSquareText size={10} />
+                    Album Thoughts
+                  </p>
+                  <div className="has-tooltip">
+                    <button 
+                      onClick={handleSaveReview}
+                      disabled={isSaving}
+                      className={`detail-save-review-btn ${isSaving ? 'opacity-40' : 'opacity-100 hover:text-blue-400'}`}
+                    >
+                      <Save size={12} className={isSaving ? 'animate-pulse' : ''} />
+                      <span>{isSaving ? 'Archiving...' : 'Save Notes'}</span>
+                    </button>
+                    <div className="tooltip !text-[8px] !max-w-[200px] !tracking-normal">
+                      Notes are safely stored in your browser's local storage for your next visit.
+                    </div>
+                  </div>
+                </div>
+                <div className="review-textarea-wrapper liquid-glass">
+                  <textarea 
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    placeholder="I really enjoyed... I thought this album was..."
+                    className="detail-review-textarea custom-glass-scrollbar"
+                  />
+                </div>
             </div>
 
             {album.description && (
-              <div className="detail-description-wrapper custom-glass-scrollbar">
+              <div className="detail-description-wrapper custom-glass-scrollbar mt-8">
+                <p className="detail-rating-label">Editorial Perspective</p>
                 <p className="detail-description">{album.description}</p>
               </div>
             )}

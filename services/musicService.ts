@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Album, Filters, DiscoveryMode } from "../types";
 import { fetchMetadataBySearch, fetchMetadataById, mapItunesToAlbum } from "./itunesService";
@@ -9,6 +8,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const HEARTED_STORAGE_KEY = "liquid_shuffle_hearted_v1";
 const TRACK_HEARTED_STORAGE_KEY = "liquid_shuffle_track_hearted_v1";
 const RATINGS_STORAGE_KEY = "liquid_shuffle_ratings_v1";
+const REVIEWS_STORAGE_KEY = "liquid_shuffle_reviews_v1";
 
 let cachedArtists: any[] | null = null;
 let rawAlbumsPool: any[] = [];
@@ -69,6 +69,27 @@ export const setRating = (id: string, rating: number) => {
     const ratings = data ? JSON.parse(data) : {};
     ratings[id] = rating;
     localStorage.setItem(RATINGS_STORAGE_KEY, JSON.stringify(ratings));
+  } catch {}
+};
+
+export const getAlbumReview = (id: string): string => {
+  try {
+    const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
+    const reviews = data ? JSON.parse(data) : {};
+    return reviews[id] || "";
+  } catch { return ""; }
+};
+
+export const setAlbumReview = (id: string, review: string) => {
+  try {
+    const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
+    const reviews = data ? JSON.parse(data) : {};
+    if (!review.trim()) {
+      delete reviews[id];
+    } else {
+      reviews[id] = review;
+    }
+    localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
   } catch {}
 };
 

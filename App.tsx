@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Filters, DiscoveryMode, AppView, Album } from './types';
 import { useAlbumDiscovery } from './hooks/useAlbumDiscovery';
@@ -22,6 +21,7 @@ const IconShuffleAnimated = () => (
 const App: React.FC = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
+  const [previousView, setPreviousView] = useState<AppView>(AppView.HOME);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
   const [filters, setFilters] = useState<Filters>({
@@ -79,9 +79,10 @@ const App: React.FC = () => {
     toast.dismiss(toastId);
   };
 
-  const openAppleMusic = () => {
+  const handleLaunchAlbum = () => {
     if (currentAlbum?.appleMusicUrl) {
       window.open(currentAlbum.appleMusicUrl, '_blank');
+      handleOpenAlbumDetails(currentAlbum);
     }
   };
 
@@ -96,6 +97,7 @@ const App: React.FC = () => {
 
   const handleOpenAlbumDetails = (album: Album) => {
     setSelectedAlbum(album);
+    setPreviousView(currentView);
     setCurrentView(AppView.ALBUM_DETAILS);
     setPersistentBg(album.artworkUrl);
   };
@@ -128,7 +130,7 @@ const App: React.FC = () => {
               setFilters={setFilters}
               onShuffle={handleShuffleAction}
               onRefreshMetadata={handleRefreshMetadata}
-              onLaunchAlbum={openAppleMusic}
+              onLaunchAlbum={handleLaunchAlbum}
               onResetFilters={resetFilters}
             />
           </>
@@ -144,7 +146,7 @@ const App: React.FC = () => {
         return selectedAlbum ? (
           <AlbumDetailView 
             album={selectedAlbum} 
-            onBack={() => setCurrentView(AppView.LIBRARY)} 
+            onBack={() => setCurrentView(previousView === AppView.ALBUM_DETAILS ? AppView.HOME : previousView)} 
           />
         ) : null;
       default:

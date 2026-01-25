@@ -1,63 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Album } from '../../types';
 import { hydrateAlbum, getHeartedIds, toggleHearted, getRating, setRating } from '../../services/musicService';
-import { GlassCard } from '../../components/Common';
-import { Heart, Star } from 'lucide-react';
+import { GlassCard, StarRating } from '../../components/Common';
+import { Heart } from 'lucide-react';
 
 interface LibraryItemProps { 
   entry: any; 
   layout?: 'grid' | 'list';
   onClick?: (album: Album) => void;
 }
-
-const StarRating = ({ rating, onRate }: { rating: number, onRate: (r: number) => void }) => {
-  const [hover, setHover] = useState(0);
-  const [animatingRating, setAnimatingRating] = useState(0);
-  const [isBusy, setIsBusy] = useState(false);
-
-  const handleClick = (e: React.MouseEvent, s: number) => {
-    e.stopPropagation();
-    onRate(s);
-    setAnimatingRating(s);
-    setIsBusy(true);
-    // Wait for the full stagger animation cycle to finish before clearing busy state
-    setTimeout(() => {
-      setIsBusy(false);
-      setAnimatingRating(0);
-    }, 1000);
-  };
-
-  return (
-    <div className="flex gap-0.5 mt-1">
-      {[1, 2, 3, 4, 5].map((s) => {
-        // Only show persistent yellow if NOT busy with animation
-        const isActive = !isBusy && (s <= rating || s <= hover);
-        const isAnimating = isBusy && s <= animatingRating;
-        
-        return (
-          <button
-            key={s}
-            onClick={(e) => handleClick(e, s)}
-            onMouseEnter={() => setHover(s)}
-            onMouseLeave={() => setHover(0)}
-            className={`star-btn transform active:scale-150 ${isActive ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'text-white/20'} ${isAnimating ? 'star-sequence-anim' : ''}`}
-            style={{ 
-              animationDelay: isAnimating ? `${s * 50}ms` : '0ms'
-            }}
-          >
-            <Star 
-              size={8} 
-              fill={isActive || isAnimating ? "currentColor" : "rgba(255,255,255,0.05)"} 
-              strokeWidth={2.5} 
-              className="will-change-transform"
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-};
 
 const LibraryItem: React.FC<LibraryItemProps> = ({ entry, layout = 'grid', onClick }) => {
   const [album, setAlbum] = useState<Album | null>(null);
@@ -132,7 +83,7 @@ const LibraryItem: React.FC<LibraryItemProps> = ({ entry, layout = 'grid', onCli
                       </button>
                     </h4>
                   </div>
-                  <StarRating rating={rating} onRate={handleRate} />
+                  <StarRating rating={rating} onRate={handleRate} size="sm" />
                 </div>
                 <div className="flex items-center gap-2 opacity-50 text-[9px] font-bold">
                   <span className="text-blue-400 truncate">{album?.artist || "Resolving..."}</span>
@@ -178,7 +129,7 @@ const LibraryItem: React.FC<LibraryItemProps> = ({ entry, layout = 'grid', onCli
         <p className="item-artist truncate text-[9px] font-bold text-blue-400/80">
           {album?.artist || "Resolving..."}
         </p>
-        <StarRating rating={rating} onRate={handleRate} />
+        <StarRating rating={rating} onRate={handleRate} size="sm" className="mt-1" />
       </div>
 
       {album?.description && (
