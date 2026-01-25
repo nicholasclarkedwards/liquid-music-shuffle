@@ -56,8 +56,17 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px;
-  overscroll-behavior: auto; /* Fixed Safari scroll chaining */
+  overscroll-behavior: auto;
   touch-action: pan-y;
+}
+
+/* Hide Scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .suggestion-item {

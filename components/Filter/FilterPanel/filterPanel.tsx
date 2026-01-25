@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Filters } from '../../../types';
 import { FilterPanelProps } from './filterPanelProps';
@@ -12,10 +13,22 @@ const IconError = () => (
   </svg>
 );
 
+const ALL_GENRES = [
+  "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", 
+  "Metal", "Country", "Indie", "Folk", "Blues", "Soul", "Punk", "Funk", "Disco", 
+  "Techno", "House", "Ambient", "Synthpop", "Shoegaze", "Grunge", "Psychedelic", 
+  "Latin", "Reggae", "Ska", "Gospel", "Americana", "Bluegrass", "Trance", 
+  "Dubstep", "Drum and Bass", "Lo-Fi", "Trap", "Afrobeat", "K-Pop", "J-Pop", 
+  "Emo", "Hardcore", "Orchestral", "Soundtrack", "World"
+].sort();
+
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef<HTMLDivElement>(null);
+  const [artistSuggestions, setArtistSuggestions] = useState<string[]>([]);
+  const [genreSuggestions, setGenreSuggestions] = useState<string[]>([]);
+  const [activeSuggestionField, setActiveSuggestionField] = useState<'artist' | 'genre' | null>(null);
+  
+  const artistRef = useRef<HTMLDivElement>(null);
+  const genreRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (key: keyof Filters, value: string) => {
     setFilters(prev => {
@@ -55,11 +68,24 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
     handleChange('artist', value);
     if (value.trim().length >= 1) {
       const matches = await getArtistSuggestions(value);
-      setSuggestions(matches);
-      setShowSuggestions(matches.length > 0);
+      setArtistSuggestions(matches);
+      setActiveSuggestionField(matches.length > 0 ? 'artist' : null);
     } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
+      setArtistSuggestions([]);
+      setActiveSuggestionField(null);
+    }
+  };
+
+  const handleGenreChange = (value: string) => {
+    handleChange('genre', value);
+    if (value.trim().length >= 1) {
+      const normalized = value.toLowerCase();
+      const matches = ALL_GENRES.filter(g => g.toLowerCase().includes(normalized)).slice(0, 8);
+      setGenreSuggestions(matches);
+      setActiveSuggestionField(matches.length > 0 ? 'genre' : null);
+    } else {
+      setGenreSuggestions([]);
+      setActiveSuggestionField(null);
     }
   };
 
@@ -74,8 +100,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
+      if (
+        (artistRef.current && !artistRef.current.contains(event.target as Node)) &&
+        (genreRef.current && !genreRef.current.contains(event.target as Node))
+      ) {
+        setActiveSuggestionField(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -86,16 +115,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
     <FilterPanelView 
       filters={filters}
       setFilters={setFilters}
-      suggestions={suggestions}
-      showSuggestions={showSuggestions}
-      suggestionRef={suggestionRef}
+      suggestions={activeSuggestionField === 'artist' ? artistSuggestions : genreSuggestions}
+      showSuggestions={activeSuggestionField !== null}
+      suggestionRef={activeSuggestionField === 'artist' ? artistRef : genreRef}
       decades={decades}
       months={months}
       yearsInDecade={getYearsInDecade(filters.decade)}
       handleYearTextChange={handleYearTextChange}
       handleArtistChange={handleArtistChange}
+      handleGenreChange={handleGenreChange}
       handleChange={handleChange}
-      setShowSuggestions={setShowSuggestions}
+      setShowSuggestions={(show) => !show && setActiveSuggestionField(null)}
+      activeSuggestionField={activeSuggestionField}
     />
   );
 };

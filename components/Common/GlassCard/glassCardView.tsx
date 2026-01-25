@@ -1,9 +1,13 @@
+
 import React from 'react';
 import { GlassCardProps } from './glassCardProps';
 
-const GlassCardView: React.FC<GlassCardProps> = ({ children, className = "", imageUrl }) => {
+const GlassCardView: React.FC<GlassCardProps> = ({ children, className = "", imageUrl, onClick }) => {
   return (
-    <div className={`liquid-glass glass-card-outer ${className}`}>
+    <div 
+      className={`liquid-glass glass-card-outer ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       {/* Internal Color Fill Layer */}
       <div className="glass-card-fill-layer">
         {/* Album Color Fill - Secondary soft glow */}

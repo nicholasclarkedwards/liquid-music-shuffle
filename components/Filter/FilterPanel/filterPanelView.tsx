@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FilterPanelProps } from './filterPanelProps';
 import { CustomDropdown } from '../../Common';
@@ -11,8 +12,10 @@ interface FilterPanelViewProps extends FilterPanelProps {
   yearsInDecade: string[];
   handleYearTextChange: (value: string) => void;
   handleArtistChange: (value: string) => void;
+  handleGenreChange: (value: string) => void;
   handleChange: (key: keyof import('../../../types').Filters, value: string) => void;
   setShowSuggestions: (show: boolean) => void;
+  activeSuggestionField: 'artist' | 'genre' | null;
 }
 
 const FilterPanelView: React.FC<FilterPanelViewProps> = ({ 
@@ -25,8 +28,10 @@ const FilterPanelView: React.FC<FilterPanelViewProps> = ({
   yearsInDecade,
   handleYearTextChange,
   handleArtistChange,
+  handleGenreChange,
   handleChange,
-  setShowSuggestions
+  setShowSuggestions,
+  activeSuggestionField
 }) => {
   return (
     <div className="filter-panel-container">
@@ -78,19 +83,50 @@ const FilterPanelView: React.FC<FilterPanelViewProps> = ({
         </div>
       )}
 
-      {/* Row 3: Genre */}
-      <div className="filter-field filter-row-full">
-        <label className="filter-label">Musical Genre</label>
-        <CustomDropdown 
-          label="Genre"
-          options={["Any", "Rock", "Pop", "Jazz", "Electronic", "Classical", "Hip Hop", "R&B", "Alternative", "Metal", "Country"]}
-          value={filters.genre}
-          onChange={(val) => handleChange('genre', val)}
-        />
+      {/* Row 3: Genre with Autocomplete */}
+      <div className="filter-field filter-row-full filter-artist-pool-wrapper" ref={activeSuggestionField === 'genre' ? suggestionRef : null}>
+        <label className="filter-label">Genre</label>
+        <div className="glass-input-container px-1">
+          <input 
+            type="text"
+            placeholder="Search genre..."
+            value={filters.genre}
+            onChange={(e) => handleGenreChange(e.target.value)}
+            autoComplete="off"
+            className="placeholder-white/35 text-[12px] font-bold"
+          />
+        </div>
+        {showSuggestions && activeSuggestionField === 'genre' && (
+          <div className="suggestions-menu liquid-menu-base">
+            <div className="suggestions-list no-scrollbar">
+              <button
+                onClick={() => {
+                  handleChange('genre', '');
+                  setShowSuggestions(false);
+                }}
+                className="suggestion-item italic opacity-60"
+              >
+                Clear Selection (Any)
+              </button>
+              {suggestions.map((genre, idx) => (
+                <button
+                  key={`${genre}-${idx}`}
+                  onClick={() => {
+                    handleChange('genre', genre);
+                    setShowSuggestions(false);
+                  }}
+                  className="suggestion-item"
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Row 4: Artist Pool */}
-      <div className="filter-field filter-artist-pool-wrapper" ref={suggestionRef}>
+      <div className="filter-field filter-artist-pool-wrapper" ref={activeSuggestionField === 'artist' ? suggestionRef : null}>
         <label className="filter-label">Artist Pool</label>
         <div className="glass-input-container px-1">
           <input 
@@ -103,9 +139,9 @@ const FilterPanelView: React.FC<FilterPanelViewProps> = ({
           />
         </div>
         
-        {showSuggestions && (
+        {showSuggestions && activeSuggestionField === 'artist' && (
           <div className="suggestions-menu liquid-menu-base">
-            <div className="suggestions-list custom-glass-scrollbar">
+            <div className="suggestions-list no-scrollbar">
               {suggestions.map((artist, idx) => (
                 <button
                   key={`${artist}-${idx}`}

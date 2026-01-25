@@ -1,10 +1,38 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlbumArtworkViewProperties } from './albumArtworkProps';
-import { GlassCard, InfoIcon } from '../../Common';
-import { RefreshCw } from 'lucide-react';
+import { GlassCard } from '../../Common';
+import { Heart, Shuffle } from 'lucide-react';
+import { getHeartedIds, toggleHearted } from '../../../services/musicService';
 
 const AlbumArtworkView: React.FC<AlbumArtworkViewProperties> = (props) => {
+  const [isHearted, setIsHearted] = useState(false);
+  const [isPopping, setIsPopping] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  useEffect(() => {
+    if (props.album) {
+      setIsHearted(getHeartedIds().has(props.album.id));
+    }
+  }, [props.album]);
+
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!props.album) return;
+    const newState = toggleHearted(props.album.id);
+    setIsHearted(newState);
+    setIsPopping(true);
+    setTimeout(() => setIsPopping(false), 450);
+  };
+
+  const handleShuffleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isShuffling) return;
+    setIsShuffling(true);
+    props.onRefresh();
+    setTimeout(() => setIsShuffling(false), 600);
+  };
+
   if (props.isLoading) {
     return (
       <GlassCard className="artwork-card-base">
@@ -72,27 +100,41 @@ const AlbumArtworkView: React.FC<AlbumArtworkViewProperties> = (props) => {
         </div>
 
         <div className="artwork-meta-layout">
-          <h2 className="artwork-title">{props.album.name}</h2>
+          <h2 className="artwork-title">
+            {props.album.name}
+            <button 
+              onClick={handleHeartClick}
+              className={`heart-btn inline-flex ml-2 align-middle ${isHearted ? 'is-active' : 'opacity-40'} ${isPopping ? 'heart-pop-anim' : ''}`}
+            >
+              <Heart 
+                size={26} 
+                fill={isHearted ? "currentColor" : "rgba(255,255,255,0.05)"} 
+                className={`${isHearted ? "text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]" : "text-white/80"}`} 
+                strokeWidth={2.5}
+              />
+            </button>
+          </h2>
           <p className="artwork-artist">{props.album.artist}</p>
           
-          <div className="flex items-center justify-center gap-3">
-            <div className="artwork-badge-container">
-              <span className="artwork-badge-text">{props.album.releaseYear}</span>
-              <div className="artwork-badge-dot"></div>
-              <span className="artwork-badge-text">{props.album.genre}</span>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-1">
+            <div className="flex items-center justify-center gap-4 mt-2">
+              <div className="artwork-badge-container">
+                <span className="artwork-badge-text">{props.album.releaseYear}</span>
+                <div className="artwork-badge-dot"></div>
+                <span className="artwork-badge-text">{props.album.genre}</span>
+              </div>
 
-            <button 
-              onClick={(e) => {
-                  e.stopPropagation();
-                  props.onRefresh();
-              }}
-              className={`artwork-meta-refresh-btn has-tooltip tooltip-right-align ${props.isLoading ? 'is-loading' : ''}`}
-              title="Refresh Metadata"
-            >
-              <RefreshCw size={12} className={`refresh-icon ${props.isLoading ? 'animate-spin' : ''}`} />
-              <div className="tooltip">Sync artwork & info with current filter context</div>
-            </button>
+              <button 
+                onClick={handleShuffleClick}
+                className={`heart-btn flex-shrink-0 ${isShuffling ? 'shuffle-pop-anim opacity-100' : 'opacity-40 hover:opacity-80'}`}
+              >
+                <Shuffle 
+                  size={22} 
+                  className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" 
+                  strokeWidth={3}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>

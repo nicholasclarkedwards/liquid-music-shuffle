@@ -1,4 +1,11 @@
 
+export interface Track {
+  id: string;
+  name: string;
+  durationMs: number;
+  trackNumber: number;
+}
+
 export interface Album {
   id: string;
   name: string;
@@ -8,7 +15,9 @@ export interface Album {
   releaseYear: number;
   genre: string;
   appleMusicUrl: string;
+  description?: string; // Optional description from iTunes
   sources?: Array<{ title: string; uri: string }>;
+  tracks?: Track[];
 }
 
 export interface Filters {
@@ -23,4 +32,11 @@ export enum DiscoveryMode {
   LIBRARY = 'library',
   DISCOVERY = 'discovery',
   TASTE = 'taste'
+}
+
+export enum AppView {
+  HOME = 'home',
+  EXPLORER = 'explorer',
+  LIBRARY = 'library',
+  ALBUM_DETAILS = 'album_details'
 }

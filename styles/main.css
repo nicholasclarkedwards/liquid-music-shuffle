@@ -26,7 +26,18 @@ body {
   overflow-x: hidden;
   min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none; /* Prevents whole-page rubber-banding on empty space */
+  overscroll-behavior-y: none;
+}
+
+.app-root {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  overflow-x: hidden;
 }
 
 /* Global Glass Input Primitives */
@@ -40,7 +51,7 @@ body {
   align-items: center;
   transition: all 0.5s var(--menu-spring);
   height: 44px !important;
-  border-radius: 999px !important;
+  border-radius: 9999px !important;
 }
 
 .glass-input-container:focus-within, .glass-input-container.is-active {
@@ -67,7 +78,7 @@ body {
   border: 1px solid var(--glass-border) !important;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05) !important;
   overflow: hidden;
-  border-radius: 32px !important; /* Standardized rounder radius */
+  border-radius: 32px !important;
 }
 
 .glass-button-base {
@@ -94,10 +105,54 @@ body {
   border-radius: 10px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Poppy Liquid Glassmorphism Animations */
+@keyframes starSequence {
+  0% { transform: scale(1); color: rgba(255, 255, 255, 0.2); }
+  35% { transform: scale(1.6); color: #facc15; filter: brightness(1.8) drop-shadow(0 0 20px rgba(250, 204, 21, 0.9)); }
+  60% { transform: scale(0.85); color: #facc15; }
+  85% { transform: scale(1.1); }
+  100% { transform: scale(1); color: #facc15; }
 }
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+
+.star-sequence-anim {
+  animation: starSequence 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.4); }
+  30% { transform: scale(0.9); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.heart-pop-anim {
+  animation: heartPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes shufflePop {
+  0% { transform: rotate(0deg) scale(1); }
+  30% { transform: rotate(120deg) scale(1.4); }
+  60% { transform: rotate(240deg) scale(0.9); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.shuffle-pop-anim {
+  animation: shufflePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Glassy Icon Aesthetics */
+.heart-btn, .star-btn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: all 0.3s var(--menu-spring);
+}
+
+.heart-btn:focus, .star-btn:focus {
+  outline: none !important;
 }

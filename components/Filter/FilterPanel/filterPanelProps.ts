@@ -1,3 +1,4 @@
+import React from 'react';
 import { Filters } from '../../../types';
 
 export interface FilterPanelProps {

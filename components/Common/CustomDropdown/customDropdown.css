@@ -69,8 +69,14 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px;
-  overscroll-behavior: auto; /* Fixed Safari scroll chaining */
-  touch-action: pan-y; /* GPU hint for Safari vertical scrolling */
+  overscroll-behavior: auto;
+  touch-action: pan-y;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.dropdown-scroll-area::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .dropdown-option {
@@ -88,7 +94,7 @@
   text-transform: uppercase;
   background: transparent;
   border: none;
-  border-radius: 24px; /* More rounded items */
+  border-radius: 24px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }

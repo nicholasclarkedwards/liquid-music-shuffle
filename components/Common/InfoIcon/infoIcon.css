@@ -1,5 +1,6 @@
+
 .info-icon-container {
-  cursor: help;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
 }

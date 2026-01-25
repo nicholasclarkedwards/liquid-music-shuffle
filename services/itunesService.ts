@@ -1,5 +1,5 @@
 
-import { Album } from "../types";
+import { Album, Track } from "../types";
 
 /**
  * iTunes API requires JSONP for client-side browser requests to avoid CORS issues.
@@ -49,24 +49,20 @@ const calculateMatchScore = (result: any, targetTitle: string, targetArtist?: st
   const cleanTargetTitle = normalizeForMatch(targetTitle);
   const cleanTargetArtist = targetArtist ? normalizeForMatch(targetArtist) : "";
 
-  // 1. Title matching
   if (resTitle === cleanTargetTitle) score += 100;
   else if (resTitle.includes(cleanTargetTitle) || cleanTargetTitle.includes(resTitle)) score += 40;
 
-  // 2. Artist matching
   if (cleanTargetArtist) {
     if (resArtist === cleanTargetArtist) score += 80;
     else if (resArtist.includes(cleanTargetArtist) || cleanTargetArtist.includes(resArtist)) score += 30;
   }
 
-  // 3. Type Penalties (CRITICAL for "19" vs "Skyfall - Single")
   const isSingle = (result.collectionName || "").toLowerCase().includes("single");
   const targetIsSingle = targetTitle.toLowerCase().includes("single");
   
-  if (isSingle && !targetIsSingle) score -= 150; // Heavy penalty for unwanted singles
+  if (isSingle && !targetIsSingle) score -= 150; 
   if (!isSingle && targetIsSingle) score -= 50;
 
-  // 4. Popularity/Completeness bonus
   if (result.trackCount > 5) score += 10;
   
   return score;
@@ -86,19 +82,15 @@ export const fetchMetadataBySearch = async (title: string, artist?: string): Pro
   const cleanArtist = !isPlaceholderArtist ? artist!.replace(/["']/g, "").trim() : "";
 
   const performSearch = async (term: string) => {
-    // Search a wider pool to find the best scoring match
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=20`;
-    console.log(`[ITunesService] Searching: ${url}`);
     const data: any = await jsonpFetch(url);
     return data.results || [];
   };
 
-  // PASS 1: Try combined term (Best for specific matches)
   let results = cleanArtist 
     ? await performSearch(`${cleanArtist} ${cleanTitle}`) 
     : await performSearch(cleanTitle);
 
-  // PASS 2: If nothing found, try permutations (e.g. remove "the", "and")
   if (results.length === 0 && cleanArtist) {
     const reducedTitle = cleanTitle.replace(/^(the|a|an)\s+/i, "");
     if (reducedTitle !== cleanTitle) {
@@ -106,12 +98,10 @@ export const fetchMetadataBySearch = async (title: string, artist?: string): Pro
     }
   }
 
-  // PASS 3: Broad fallback (Search just title, score by artist later)
   if (results.length === 0) {
     results = await performSearch(cleanTitle);
   }
 
-  // FILTER & SCORE
   const scoredMatches = results
     .filter(isValidAlbum)
     .map((r: any) => ({
@@ -123,23 +113,33 @@ export const fetchMetadataBySearch = async (title: string, artist?: string): Pro
   const bestMatch = scoredMatches[0]?.result;
   if (!bestMatch) throw new Error(`Catalog miss: "${cleanTitle}" not found.`);
 
-  console.log(`[ITunesService] Best Match: "${bestMatch.collectionName}" by ${bestMatch.artistName} (Score: ${scoredMatches[0].score})`);
-
-  const album = mapItunesToAlbum(bestMatch);
-  album.originalName = title; 
-  return album;
+  return mapItunesToAlbum(bestMatch);
 };
 
 export const fetchMetadataById = async (catalogId: string): Promise<Album> => {
   const firstId = catalogId.split(',')[0].trim();
-  const url = `https://itunes.apple.com/lookup?id=${firstId}&entity=album`;
+  const url = `https://itunes.apple.com/lookup?id=${firstId}&entity=song`;
   
   try {
     const data: any = await jsonpFetch(url);
     if (!data.results || data.results.length === 0) throw new Error(`Catalog ID ${firstId} not found.`);
-    return mapItunesToAlbum(data.results[0]);
+    
+    const albumData = data.results.find((r: any) => r.wrapperType === 'collection');
+    const songsData = data.results.filter((r: any) => r.wrapperType === 'track');
+
+    const album = mapItunesToAlbum(albumData || data.results[0]);
+    
+    if (songsData.length > 0) {
+      album.tracks = songsData.map((s: any) => ({
+        id: s.trackId.toString(),
+        name: s.trackName,
+        durationMs: s.trackTimeMillis,
+        trackNumber: s.trackNumber
+      }));
+    }
+    
+    return album;
   } catch (err: any) {
-    console.warn(`[ITunesService] ID Lookup failed: ${err.message}. Fallback to search.`);
     throw err;
   }
 };
@@ -153,4 +153,5 @@ export const mapItunesToAlbum = (result: any): Album => ({
   releaseYear: new Date(result.releaseDate).getFullYear(),
   genre: result.primaryGenreName,
   appleMusicUrl: result.collectionViewUrl,
+  description: result.description || result.editorialNotes?.standard || result.editorialNotes?.short || "",
 });
